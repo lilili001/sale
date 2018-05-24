@@ -1,0 +1,17 @@
+{
+    "name": "Sale",
+    "alias": "sale",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 1,
+    "providers": [
+        "Modules\\Sale\\Providers\\SaleServiceProvider",
+        "Modules\\Sale\\Providers\\RouteServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        
+    ],
+    "requires": []
+}
