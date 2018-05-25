@@ -39,23 +39,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            <?php if (isset($saleorders)): ?>
-                            <?php foreach ($saleorders as $key => $saleorder): ?>
+                            <?php if (isset($orders)): ?>
+                            <?php foreach ($orders as $key => $order): ?>
                             <tr>
-                                <td>{{ $key  }}</td>
-                                <td>{{ $saleorder->order_id  }}</td>
-                                <td>{{ $saleorder->payment_gateway  }}</td>
-                                <td>{{ $saleorder->currency . $saleorder->amount_current_currency  }}</td>
+                                <td>{{ $key+1  }}</td>
+                                <td>{{ $order->order_id  }}</td>
+                                <td>{{ $order->payment_gateway  }}</td>
+                                <td>{{ $order->currency . $order->amount_current_currency  }}</td>
                                 <td></td>
                                 <td></td>
                                 <td>
                                     <a href="">
-                                        {{ $saleorder->created_at }}
+                                        {{ $order->created_at }}
                                     </a>
                                 </td>
                                 <td>
-                                    <div class="btn-group" data-orderid="{{ $saleorder->order_id  }}">
-                                        <a href="{{ route('admin.sale.saleorder.detail', ['order' => $saleorder->order_id] ) }}">查看</a>
+                                    <div class="btn-group" data-orderid="{{ $order->order_id  }}">
+                                        <a href="{{ route('admin.sale.saleorder.detail', ['order' => $order->order_id] ) }}">查看</a>
                                         <a  class="ship-button"><span>发货</span></a>
                                         <a href="javascript:;">退款</a>
                                     </div>
@@ -64,12 +64,7 @@
                             <?php endforeach; ?>
                             <?php endif; ?>
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <th>{{ trans('core::core.table.created at') }}</th>
-                                <th>{{ trans('core::core.table.actions') }}</th>
-                            </tr>
-                            </tfoot>
+
                         </table>
                         <!-- /.box-body -->
                     </div>
@@ -118,11 +113,8 @@
                         }
                     },
                     submitHandler:function(form) {
-                        alert('提交了');
                         $.post(route('admin.sale.saleorder.ship', {'order':order}
-                            ),{
-                            _token:"{{csrf_token()}}"
-                        }).then(function(res){
+                            ), $('#shipForm').serializeArray()).then(function(res){
                         })
                     },
                 })

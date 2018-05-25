@@ -31,26 +31,6 @@ $router->group(['prefix' =>'/sale'], function (Router $router) {
         'middleware' => 'can:sale.saleorders.index'
     ]);
 
-//    $router->get('saleorders/create', [
-//        'as' => 'admin.sale.saleorder.create',
-//        'uses' => 'SaleOrderController@create',
-//        'middleware' => 'can:sale.saleorders.create'
-//    ]);
-//    $router->post('saleorders', [
-//        'as' => 'admin.sale.saleorder.store',
-//        'uses' => 'SaleOrderController@store',
-//        'middleware' => 'can:sale.saleorders.create'
-//    ]);
-//    $router->get('saleorders/{saleorder}/edit', [
-//        'as' => 'admin.sale.saleorder.edit',
-//        'uses' => 'SaleOrderController@edit',
-//        'middleware' => 'can:sale.saleorders.edit'
-//    ]);
-//    $router->put('saleorders/{saleorder}', [
-//        'as' => 'admin.sale.saleorder.update',
-//        'uses' => 'SaleOrderController@update',
-//        'middleware' => 'can:sale.saleorders.edit'
-//    ]);
     $router->delete('saleorders/{saleorder}', [
         'as' => 'admin.sale.saleorder.destroy',
         'uses' => 'SaleOrderController@destroy',

@@ -27,7 +27,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @param array $data
      * @return bool
      */
-    public function ship($order, $data=[])
+    public function ship($order, $data)
     {
         try{
             Order::where('order_id',$order)
@@ -80,8 +80,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
        return OrderOperation::create([
             'order_id' => $order,
             'order_status' => $status,
-            'order_status_label' => config('order')[$status],
+            'order_status_label' => config('order.status')[$status],
         ]);
     }
-
 }

@@ -9,7 +9,7 @@
       </div>
 
       <form class="form-horizontal" id="shipForm" autocomplete="off" novalidate="novalidate">
-
+          <input type="hidden" name="_token" value="{{csrf_token()}}">
           <div class="modal-body">
                 <div class="box-body">
                     <div class="form-group">

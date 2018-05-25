@@ -35,8 +35,8 @@ class SaleOrderController extends AdminBaseController
      */
     public function index()
     {
-        $saleorders = $this->saleorder->all();
-        return view('sale::admin.saleorders.index', compact('saleorders'));
+        $orders = $this->saleorder->all();
+        return view('sale::admin.saleorders.index', compact('orders'));
     }
 
     public function confirm_payment($order)
@@ -51,9 +51,9 @@ class SaleOrderController extends AdminBaseController
         return view('sale::admin.saleorders.detail',compact('order'));
     }
 
-    public function ship($order)
+    public function ship(Request $request,$order)
     {
-        $bool = $this->saleorder->ship($order,request('all'));
+        $bool = $this->saleorder->ship($order,$request->all());
         return $bool ? AjaxResponse::success('success') : AjaxResponse::fail('fail');
     }
 
