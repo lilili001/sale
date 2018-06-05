@@ -2,9 +2,11 @@
 
 namespace Modules\Sale\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Modules\Mpay\Entities\Order;
+use Modules\Mpay\Entities\OrderOperation;
 use Modules\Mpay\Repositories\OrderRepository;
 use Modules\Sale\Entities\SaleOrder;
 use Modules\Sale\Repositories\SaleOrderRepository;
@@ -35,6 +37,7 @@ class PublicController extends AdminBaseController
     {
         parent::__construct();
         $this->saleorder = $saleorder;
+        $this->order = $order;
     }
 
     /**
@@ -66,25 +69,68 @@ class PublicController extends AdminBaseController
      */
     public function cancel($order)
     {
-        
+       $bool = $this->saleorder->cancel($order);
+       return $bool? AjaxResponse::success('','取消成功') : AjaxResponse::fail('','取消失败') ;
     }
 
+    public function order_with_supplier($order)
+    {
+        $bool = $this->saleorder->order_with_supplier($order);
+       return $bool ? AjaxResponse::success('成功') :  AjaxResponse::fail('失败');
+    }
+
+    public function confirm_order_receipt($order)
+    {
+        $bool = $this->saleorder->confirm_order_receipt($order);
+        return $bool ? AjaxResponse::success('成功') :  AjaxResponse::fail('失败');
+    }
+    
     /**
      * @param $order
      * 退款申请 后台人工点击审批通过 退款
      */
-    public function refund_apply($order)
+    public function refund_apply( $order )
     {
+        try{
+            $bool = $this->saleorder->refund_apply($order);
+        }catch (Exception $e){
+            return AjaxResponse::fail('退款申请失败');
+        }
+        return  AjaxResponse::success('退款申请成功');
+    }
 
+    public function refund_approve(Order $order)
+    {
+        try{
+           $bool =  $this->saleorder->refund_approve($order);
+           //如果审批通过则立即退款
+           if($bool){
+               $this->order->refund( $order->transaction_id, [
+                   'currency' => $order->currency,
+                   'amount'   => $order->amount_current_currency
+               ]);
+           }
+        }catch (Exception $e){
+            return AjaxResponse::fail('失败');
+        }
+        return  AjaxResponse::success('成功');
     }
 
     /**
      * @param $order
      * 退款退货申请 后台人工点击审批通过 , 买家退货, 收到退后后变更状态   退款成功
      */
-    public function refund_return_apply($order)
+    public function return_apply( $order)
     {
-
+       $bool = $this->saleorder->refund_return_apply($order);
+       return $bool ? AjaxResponse::success('成功') : AjaxResponse::fail('失败');
     }
-    
+    /*
+     * 退货审批通过
+     * */
+    public function return_approve( $order)
+    {
+        $bool = $this->saleorder->return_approve($order);
+        return $bool ? AjaxResponse::success('成功') : AjaxResponse::fail('失败');
+    }
 }

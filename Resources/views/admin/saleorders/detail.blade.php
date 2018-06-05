@@ -13,9 +13,38 @@
 @section('content')
         <div class="bgary bg-white bg-shadow radius4">
             <div slot="header" class="clearfix">
-                <span>订单基本信息</span>
-                <el-button style="float: right;  " type="primary" data-toggle="modal" data-target="#shipModal">发货</el-button>
+                <span>订单基本信息</span> ( <span type="text" style="color:red">{{config('order.status')[$order->order_status]}}</span> )
+
+                {{-- 订单已付款3 卖家订货 订货完成 状态变为6 --}}
+                @if( $order->is_paid && $order->order_status == 3)
+                    <el-button style="float: right;  " type="primary" data-toggle="modal" data-target="#shipModal"><a href="">订货</a></el-button>
+                @endif
+
+                {{--case2: 如果订单已付款 并且已和供应商订货 订单状态为6 准备出库 则卖家可以操作[发货] 发货完毕 状态变为7 已发货--}}
+                @if( $order->is_paid &&  $order->order_status == 6 )
+                    <el-button style="float: right;  " type="primary" data-toggle="modal" data-target="#shipModal"><a href="">发货</a></el-button>
+                @endif
+
+                {{--case3:
+                如果已付款 并且没和供应商订货 则买家可以提退款申请15
+                或者是买家退货退款申请 退货收到 状态变为13的时候
+                卖家可以审批 审批完状态变成16--}}
+                @if(
+                   ($order->is_paid &&
+                    $order->is_ordered_with_supplier == false &&
+                    $order->order_status == 15) ||
+                    $order->order_status == 13
+                )
+                    {{-- 退款完毕后 状态变成 17 --}}
+                    <el-button style="float: right;  " type="primary" data-toggle="modal" data-target="#shipModal"><a href="">退款审批通过</a></el-button>
+                @endif
+
+                {{--case4: 已收到货 退货申请10, 审批完毕状态变为11 --}}
+                @if( $order->order_status == 10 )
+                    <el-button style="float: right;  " type="primary" data-toggle="modal" data-target="#shipModal"><a href="">退货审批通过</a></el-button>
+                @endif
             </div>
+
             <section class="order_basic_info">
                 <div class="row mar-b10">
                     <div class="col-md-4">
@@ -30,28 +59,33 @@
                 </div>
 
                 <div class="row mar-b10">
-                    <div class="col-md-4"><span class="w80 label666">订单状态:</span> <span> </span></div>
-                    <div class="col-md-4"><span class="w80 label666">发货方式:</span> <span> </span></div>
-                    <div class="col-md-4"><span class="w80 label666" >追踪单号:</span> <span> </span></div>
+                    <div class="col-md-4"><span class="w80 label666">订单状态:</span> <span> {{ config('order.status')[$order->order_status]  }} </span></div>
+                    <div class="col-md-4"><span class="w80 label666">货币:</span> <span> {{$order->currency}} </span></div>
+                    <div class="col-md-4"><span class="w80 label666">下单时间:</span> <span> {{ $order->created_at  }} </span></div>
                 </div>
 
                 <div class="row mar-b10">
-                    <div class="col-md-4"><span class="w80 label666">货币:</span> <span> {{$order->currency}} </span></div>
-                    <div class="col-md-4"><span class="w80 label666">下单时间:</span> <span>2018-05-23</span></el-col>
+                        @if( $order->is_shipped )
+                            <div class="col-md-4"><span class="w80 label666">发货方式:</span> <span>{{  $order->delivery->delivery  }} </span></div>
+                            <div class="col-md-4"><span class="w80 label666" >追踪单号:</span> <span>{{  $order->delivery->tracking_number  }} </span></div>
+                            <div class="col-md-4"><span class="w80 label666" >发货时间:</span> <span>{{  $order->delivery->created_at  }} </span></div>
+                        @endif
                 </div>
             </section>
-            <hr>
 
-            <h4>Shipping Info</h4>
-            <div class="mar-b10">
-                <span class="w80 label666">收货人:</span> <span>{{ $order->address->name  }}</span>
-            </div>
-            <div class="mar-b10">
-                <span class="w80 label666">收货地址:</span> <span>{{ $order->address->street . ' ,' .$order->address->city .  ' ,' .$order->address->state . ' ,' .$order->address->country  }}</span>
-            </div>
-            <div>
-                <span class="w80 label666">收货人电话:</span> <span>{{ $order->address->telephone }}</span>
-            </div>
+            @if($order->is_shipped)
+                <hr>
+                <h4>Shipping Info</h4>
+                <div class="mar-b10">
+                    <span class="w80 label666">收货人:</span> <span>{{ $order->address->name  }}</span>
+                </div>
+                <div class="mar-b10">
+                    <span class="w80 label666">收货地址:</span> <span>{{ $order->address->street . ' ,' .$order->address->city .  ' ,' .$order->address->state . ' ,' .$order->address->country  }}</span>
+                </div>
+                <div>
+                    <span class="w80 label666">收货人电话:</span> <span>{{ $order->address->telephone }}</span>
+                </div>
+            @endif
 
             <hr>
             <h4>Product Info</h4>
@@ -105,7 +139,6 @@
                 </thead>
                 <tbody></tbody>
             </table>
-
         </div>
 @stop
 
@@ -120,9 +153,6 @@
 @stop
 
 @push('js-stack')
-    <script type="text/javascript">
-
-    </script>
     <?php $locale = locale(); ?>
     <script type="text/javascript">
         $(function () {
