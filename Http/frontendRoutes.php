@@ -63,8 +63,4 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'uses' => 'PublicController@delete',
         'middleware' => 'logged.in'
     ]);
-
-
-
-
 });

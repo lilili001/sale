@@ -52,7 +52,37 @@ class RegisterSaleSidebar implements \Maatwebsite\Sidebar\SidebarExtender
                         $this->auth->hasAccess('sale.saleorders.index')
                     );
                 });
+                $item->item(trans('sale::orderrefunds.title.orderrefunds'), function (Item $item) {
+                    $item->icon('fa fa-copy');
+                    $item->weight(0);
+                    $item->append('admin.sale.orderrefund.create');
+                    $item->route('admin.sale.orderrefund.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('sale.orderrefunds.index')
+                    );
+                });
+                $item->item(trans('sale::orderreturns.title.orderreturns'), function (Item $item) {
+                    $item->icon('fa fa-copy');
+                    $item->weight(0);
+                    $item->append('admin.sale.orderreturn.create');
+                    $item->route('admin.sale.orderreturn.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('sale.orderreturns.index')
+                    );
+                });
+                $item->item(trans('sale::comments.title.comments'), function (Item $item) {
+                    $item->icon('fa fa-copy');
+                    $item->weight(0);
+                    $item->append('admin.sale.comment.create');
+                    $item->route('admin.sale.comment.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('sale.comments.index')
+                    );
+                });
 // append
+
+
+
 
             });
         });

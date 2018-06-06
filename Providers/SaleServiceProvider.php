@@ -30,7 +30,13 @@ class SaleServiceProvider extends ServiceProvider
 
         $this->app['events']->listen(LoadingBackendTranslations::class, function (LoadingBackendTranslations $event) {
             $event->load('saleorders', array_dot(trans('sale::saleorders')));
+            $event->load('orderrefunds', array_dot(trans('sale::orderrefunds')));
+            $event->load('orderreturns', array_dot(trans('sale::orderreturns')));
+            $event->load('comments', array_dot(trans('sale::comments')));
             // append translations
+
+
+
 
         });
     }
@@ -66,7 +72,46 @@ class SaleServiceProvider extends ServiceProvider
                 return new \Modules\Sale\Repositories\Cache\CacheSaleOrderDecorator($repository);
             }
         );
+        $this->app->bind(
+            'Modules\Sale\Repositories\OrderRefundRepository',
+            function () {
+                $repository = new \Modules\Sale\Repositories\Eloquent\EloquentOrderRefundRepository(new \Modules\Sale\Entities\OrderRefund());
+
+                if (! config('app.cache')) {
+                    return $repository;
+                }
+
+                return new \Modules\Sale\Repositories\Cache\CacheOrderRefundDecorator($repository);
+            }
+        );
+        $this->app->bind(
+            'Modules\Sale\Repositories\OrderReturnRepository',
+            function () {
+                $repository = new \Modules\Sale\Repositories\Eloquent\EloquentOrderReturnRepository(new \Modules\Sale\Entities\OrderReturn());
+
+                if (! config('app.cache')) {
+                    return $repository;
+                }
+
+                return new \Modules\Sale\Repositories\Cache\CacheOrderReturnDecorator($repository);
+            }
+        );
+        $this->app->bind(
+            'Modules\Sale\Repositories\CommentRepository',
+            function () {
+                $repository = new \Modules\Sale\Repositories\Eloquent\EloquentCommentRepository(new \Modules\Sale\Entities\Comment());
+
+                if (! config('app.cache')) {
+                    return $repository;
+                }
+
+                return new \Modules\Sale\Repositories\Cache\CacheCommentDecorator($repository);
+            }
+        );
 // add bindings
+
+
+
 
     }
 }
