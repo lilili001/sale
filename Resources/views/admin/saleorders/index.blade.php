@@ -45,7 +45,7 @@
                                 <td> <a href="{{ route('admin.sale.saleorder.detail', ['order' => $order->order_id] ) }}">{{ $order->order_id  }}</a> </td>
                                 <td>{{ $order->payment_gateway  }}</td>
                                 <td>{{ $order->currency . $order->amount_current_currency  }}</td>
-                                <td>{{  config('order.status')[$order->order_status]  }}</td>
+                                <td> <span class="red">{{  config('order.status')[$order->order_status]  }}</span> </td>
                                 <td>{{ $order->created_at }}</td>
                                 <td>
                                     <div class="btn-group" data-orderid="{{ $order->order_id  }}">

@@ -56,10 +56,15 @@ class PublicController extends AdminBaseController
      * @param $order
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function detail($order)
+    public function detail(Request $request,$order)
     {
         $order = Order::where('order_id',$order)->get()->first();
         $pageClass = 'order';
+
+        if( $request->expectsJson() ){
+            return Ajaxresponse::success('',$order);
+        }
+
         return view('usercenter.order-detail',compact('order','pageClass'));
     }
 
@@ -120,10 +125,13 @@ class PublicController extends AdminBaseController
      * @param $order
      * 退款退货申请 后台人工点击审批通过 , 买家退货, 收到退后后变更状态   退款成功
      */
-    public function return_apply( $order)
+    public function return_apply(Request $request, $order)
     {
-       $bool = $this->saleorder->refund_return_apply($order);
-       return $bool ? AjaxResponse::success('成功') : AjaxResponse::fail('失败');
+       $bool = $this->saleorder->refund_return_apply($order ,$request->all() );
+       if($request->expectsJson()  || $request->ajax() ){
+           return $bool ? AjaxResponse::success('成功') : AjaxResponse::fail('失败');
+       }
+
     }
     /*
      * 退货审批通过

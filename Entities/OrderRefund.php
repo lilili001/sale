@@ -2,7 +2,6 @@
 
 namespace Modules\Sale\Entities;
 
-use Dimsav\Translatable\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderRefund extends Model

@@ -2,11 +2,14 @@
 
 namespace Modules\Sale\Repositories\Eloquent;
 
+use App\Services\ImageH;
 use Illuminate\Support\Facades\DB;
 use Modules\Mpay\Entities\Order;
 use Modules\Mpay\Entities\OrderDelivery;
 use Modules\Mpay\Entities\OrderOperation;
 use Modules\Mpay\Repositories\OrderRepository;
+use Modules\Sale\Entities\Comment;
+use Modules\Sale\Entities\OrderRefund;
 use Modules\Sale\Repositories\SaleOrderRepository;
 use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
 use Carbon;
@@ -131,7 +134,6 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * 买家：退款申请
      */
     public function refund_apply($order){
-
         try{
             DB::transaction(function() use ($order){
                 Order::where('order_id',$order)
@@ -176,10 +178,50 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @param $order
      * 客户收到货后 退货退款申请
      */
-    public function refund_return_apply($order){
+    public function refund_return_apply($order , $data ){
         try{
-            DB::transaction(function ()use($order){
-                Order::where('order_id',$order)->update([
+            DB::transaction(function ()use($order , $data ){
+
+                //退款金额 信息写入退款单
+                $c_order =Order::where('order_id',$order)->get()->first() ;
+
+                $data_arr = [
+                    'order_id' => $order,
+                    'amount'   => $data['refund_amount'],
+                    'is_order_shipped' => $c_order->is_shipped,
+                    'need_return_goods'=> !$c_order->is_shipped,
+                    'user_id' => user()->id
+                ];
+
+                $refund_order =  OrderRefund::where('order_id',$order)->get()->first() ;
+                if (  !empty($refund_order)  ){
+                    //OrderRefund::where('order_id',$order)->update($data_arr);
+                    DB::table('order_refund')->where( 'order_id',$order )->update($data_arr);
+                }else{
+                    //OrderRefund::create($data_arr);
+                    DB::table('order_refund')->insert($data_arr);
+                }
+
+                //客户退货上传的图片保存 和 退款原因等留言 写入沟通的comment表
+                $customer_files = '';
+                if( isset( $data['orderfile'] ) && count( $data['orderfile'] )>0){
+                    $filelist = (new ImageH())->upload($data['orderfile']);
+                    info($filelist);
+                    $customer_files = implode(';', $filelist)  ;
+
+                }
+
+                DB::table('comments')->insert([
+                    'user_id' => user()->id,
+                    'body' => $data['refund_reason'],
+                    'pid' => 0,
+                    'img_url' => $customer_files,
+                    'commentable_id' => $order,
+                    'commentable_type' => 'Modules\Mpay\Entities\Order' ,
+                ]);
+
+                //订单状态修改
+                DB::table('orders')->where('order_id',$order)->update([
                     'order_status' => 10
                 ]);
 
