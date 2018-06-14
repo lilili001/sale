@@ -8,10 +8,12 @@ use Illuminate\Http\Response;
 use Modules\Mpay\Entities\Order;
 use Modules\Mpay\Entities\OrderOperation;
 use Modules\Mpay\Repositories\OrderRepository;
+use Modules\Sale\Entities\OrderRefund;
 use Modules\Sale\Entities\SaleOrder;
 use Modules\Sale\Repositories\SaleOrderRepository;
 use Modules\Core\Http\Controllers\Admin\AdminBaseController;
 use AjaxResponse;
+use Modules\User\Entities\Sentinel\User;
 
 /**
  * Class PublicController
@@ -56,16 +58,23 @@ class PublicController extends AdminBaseController
      * @param $order
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function detail(Request $request,$order)
+    public function detail(Request $request,$orderId)
     {
-        $order = Order::where('order_id',$order)->get()->first();
+        $order = Order::where('order_id',$orderId)->get()->first();
         $pageClass = 'order';
 
-        if( $request->expectsJson() ){
-            return Ajaxresponse::success('',$order);
+        $order_refund = OrderRefund::where('order_id' ,$orderId )->get()->first();
+        if( !empty($order_refund)  ){
+            $refund_comments = $order_refund->comments->toArray();
+        }else{
+            $refund_comments = null;
         }
 
-        return view('usercenter.order-detail',compact('order','pageClass'));
+        if( $request->expectsJson() ){
+            return Ajaxresponse::success('',compact('order' ));
+        }
+
+        return view('usercenter.order-detail',compact('order', 'refund_comments','pageClass'));
     }
 
     /**
@@ -78,12 +87,20 @@ class PublicController extends AdminBaseController
        return $bool? AjaxResponse::success('','取消成功') : AjaxResponse::fail('','取消失败') ;
     }
 
+    /**
+     * @param $order
+     * @return mixed
+     */
     public function order_with_supplier($order)
     {
         $bool = $this->saleorder->order_with_supplier($order);
        return $bool ? AjaxResponse::success('成功') :  AjaxResponse::fail('失败');
     }
 
+    /**
+     * @param $order
+     * @return mixed
+     */
     public function confirm_order_receipt($order)
     {
         $bool = $this->saleorder->confirm_order_receipt($order);
@@ -104,6 +121,10 @@ class PublicController extends AdminBaseController
         return  AjaxResponse::success('退款申请成功');
     }
 
+    /**
+     * @param Order $order
+     * @return mixed
+     */
     public function refund_approve(Order $order)
     {
         try{
@@ -131,14 +152,30 @@ class PublicController extends AdminBaseController
        if($request->expectsJson()  || $request->ajax() ){
            return $bool ? AjaxResponse::success('成功') : AjaxResponse::fail('失败');
        }
-
+       return $bool;
     }
-    /*
-     * 退货审批通过
-     * */
-    public function return_approve( $order)
+
+    /**
+     * @param Request $request
+     * @param $order
+     * @return mixed
+     */
+    public function return_approve_operation(Request $request , $order)
     {
-        $bool = $this->saleorder->return_approve($order);
+        $data = $request->all();
+        $bool = $this->saleorder->return_approve_operation($order,$data);
         return $bool ? AjaxResponse::success('成功') : AjaxResponse::fail('失败');
+    }
+
+    /**
+     * @param $order
+     * @return mixed
+     * 退货原因 从comment表获取买家留言和图片
+     */
+    public function refund_return_reason($order)
+    {
+        $comment = $this->saleorder->get_return_reason($order);
+        $applier = User::find( $comment->first()->user_id );
+        return $comment ? AjaxResponse::success('成功', compact('comment','applier')) : AjaxResponse::fail('失败');
     }
 }

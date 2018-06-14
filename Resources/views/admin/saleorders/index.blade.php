@@ -80,7 +80,7 @@
 
                                         {{--case4: 已收到货 退货申请10, 审批完毕状态变为11 --}}
                                         @if( $order->order_status == 10 )
-                                        <a href="javascript:;" class="return-approve">退货审批通过</a>
+                                        <a href="javascript:;" class="return-approve pad-r8">审批</a>
                                         @endif
 
                                     </div>
@@ -99,6 +99,9 @@
         </div>
     </div>
     @include('sale::admin.saleorders.partials.ship')
+    {{-------------------------------退货审批驳回弹窗----------------------------------------------------------}}
+    @include('sale::admin.saleorders.partials.return-approve')
+
 @stop
 
 @section('footer')
@@ -122,7 +125,7 @@
                 "sort": true,
                 "info": true,
                 "autoWidth": true,
-                "order": [[ 0, "desc" ]],
+                "order": [[ 5, "desc" ]],
                 "language": {
                     "url": '<?php echo Module::asset("core:js/vendor/datatables/{$locale}.json") ?>'
                 }
@@ -162,14 +165,15 @@
                             if( res.code == 0 ){
                                 //发货成功 关闭弹窗
                                 $('#shipModal').modal('hide');
-                                $(_this).text('')
+                                $(_this).text('');
+                                location.reload();
                             }
                         })
                     },
                 })
             });
 
-            //退款审批通过
+            //退款审批通过 未发货
             $('.refund-approve').click(function(){
                 var order = $(this).parent().data('orderid');
                 var _this = this;
@@ -182,19 +186,43 @@
                 })
             });
 
-            //退货审批通过
+            /*
+            * 退货退款 首先经过退货退款申请 最终是退款 审批的时候只有审批通过或者审批驳回
+            * 审批通过 表示同意客户寄回商品 商家收到退货后自动退款
+            * 审批驳回 表示商家不同意客户寄回商品 退货拒绝 也就不存在退款
+            * */
             $('.return-approve').click(function(){
                 var order = $(this).parent().data('orderid');
-                var _this = this;
-                $.post( route('frontend.order.return.approve',{'order':order})  ,  {
-                    _token:'{{csrf_token()}}'
-                } ).then( (res)=>{
-                    if(res.code == 0){
-                        location.reload()
-                    }
-                })
-            })
+                console.log(order);
+                //获取买家退货原因 传订单号给后台 后台根据订单号查退款相关信息
+                $.post(route('frontend.order.return.approve.reason',{order:order}) ,{_token:'{{csrf_token()}}'} ).then(function(res){
+                    var  data = res.result;
+                    $('#return_approve_modal .reason-body').text( data.comment.body );
+                    var imgList = data.comment.img_url.split(';');
+                    var imgstr = '';
+                    $.each(imgList,function(index,item){
+                        imgstr += '<a class="mar-r4" href="'+'/images/' + item+'" data-lightbox="roadtrip"><img height="35" src="/images/'+item+'"></a>'
+                    });
+                    $('#return_approve_modal .reason-img').html(imgstr);
+                    $('#return_approve_modal .applier_name').html(data.applier.first_name + ' ' + data.applier.last_name );
+                    $('#return_approve_modal').modal('show');
 
+                    //审批通过或不通过
+                    $('#return_approve_modal .confirm').click(function(){
+                        let route_name = 'frontend.order.return.approve';
+                        $.post( route(route_name,{'order':order})  ,  {
+                            _token:'{{csrf_token()}}',
+                            suggestion: $('[name="approve_suggestion"]').val(),
+                            content: $('#return_approve_modal [name="content"]').val()
+                        } ).then( (res)=>{
+                            if(res.code == 0){
+                                location.reload()
+                            }
+                        });
+                        return false;
+                    });
+                })
+            });
         });
     </script>
 @endpush

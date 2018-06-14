@@ -22,5 +22,7 @@ interface SaleOrderRepository extends BaseRepository
 
     public function refund_return_apply($order , $data);
 
-    public function return_approve(  $order);
+    public function get_return_reason($order);
+
+    public function return_approve_operation($order , $data );
 }

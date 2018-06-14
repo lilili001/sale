@@ -13,7 +13,14 @@
 @section('content')
         <div class="bgary bg-white bg-shadow radius4">
             <div slot="header" class="clearfix">
-                <span>订单基本信息</span> ( <span type="text" style="color:red">{{config('order.status')[$order->order_status]}}</span> )
+                <input type="hidden" name="order_id" value="{{ $order->id }}">
+                <span>订单基本信息</span> ( <span class="text <?php
+                    //如果是退货相关的 点击此按钮 弹出 买卖双方 退货对话
+                    if( in_array( $order->order_status , [15,16,17,10,11,12,13,21] ) ){
+                        echo "refund_process";
+                    }
+
+                ?>" style="color:red">{{config('order.status')[$order->order_status]}}</span> )
 
                 {{-- 订单已付款3 卖家订货 订货完成 状态变为6 --}}
                 @if( $order->is_paid && $order->order_status == 3)
@@ -140,6 +147,9 @@
                 <tbody></tbody>
             </table>
         </div>
+
+    @include('sale::admin.saleorders.partials.refund-comments')
+
 @stop
 
 @section('footer')
@@ -168,6 +178,13 @@
                     "url": '<?php echo Module::asset("core:js/vendor/datatables/{$locale}.json") ?>'
                 }
             });
+
+            var orderid = $('[name="order_id"]').val();
+            $('.refund_process').click(function(){
+                console.log(123)
+                $('#refund-comments').modal('show');
+            });
+
         });
     </script>
 @endpush

@@ -12,9 +12,10 @@ use Modules\Sale\Entities\Comment;
 use Modules\Sale\Entities\OrderRefund;
 use Modules\Sale\Repositories\SaleOrderRepository;
 use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
-use Carbon;
+use Carbon\Carbon;
+
 /**
- * Class EloquentSaleOrderRepository
+ * Class
  * @package Modules\Sale\Repositories\Eloquent
  */
 class EloquentSaleOrderRepository extends EloquentBaseRepository implements SaleOrderRepository
@@ -24,7 +25,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      */
     public function all()
     {
-       return Order::all();
+       return Order::orderBy('created_at', 'desc')->get();
     }
 
     /**
@@ -63,7 +64,6 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
                 ]);
                 //更新操作表 [状态更新]
                 $this->updateOrderOperation($order , 6);
-
             });
         }catch (Exception $e){
             info('出库失败' . $e->getMessage());
@@ -189,35 +189,38 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
                     'order_id' => $order,
                     'amount'   => $data['refund_amount'],
                     'is_order_shipped' => $c_order->is_shipped,
-                    'need_return_goods'=> !$c_order->is_shipped,
-                    'user_id' => user()->id
+                    'need_return_goods'=> $c_order->is_shipped != 0,
+                    'user_id' => user()->id,
+                    'created_at' => Carbon::now()
                 ];
 
                 $refund_order =  OrderRefund::where('order_id',$order)->get()->first() ;
                 if (  !empty($refund_order)  ){
                     //OrderRefund::where('order_id',$order)->update($data_arr);
-                    DB::table('order_refund')->where( 'order_id',$order )->update($data_arr);
+                    $order_refund_item = DB::table('order_refund')->where( 'order_id',$order )->update($data_arr);
                 }else{
                     //OrderRefund::create($data_arr);
-                    DB::table('order_refund')->insert($data_arr);
+                    $order_refund_item = DB::table('order_refund')->insert($data_arr);
                 }
+
+                $refund_order =  OrderRefund::where('order_id',$order)->get()->first() ;
 
                 //客户退货上传的图片保存 和 退款原因等留言 写入沟通的comment表
                 $customer_files = '';
                 if( isset( $data['orderfile'] ) && count( $data['orderfile'] )>0){
                     $filelist = (new ImageH())->upload($data['orderfile']);
-                    info($filelist);
                     $customer_files = implode(';', $filelist)  ;
-
                 }
 
+                //退货之前先要进行退款退货申请 买卖双方沟通都在refund_return
                 DB::table('comments')->insert([
                     'user_id' => user()->id,
                     'body' => $data['refund_reason'],
                     'pid' => 0,
                     'img_url' => $customer_files,
-                    'commentable_id' => $order,
-                    'commentable_type' => 'Modules\Mpay\Entities\Order' ,
+                    'commentable_id' => $refund_order->id,
+                    'commentable_type' => 'Modules\Sale\Entities\OrderRefund',
+                    'created_at' => Carbon::now()
                 ]);
 
                 //订单状态修改
@@ -235,18 +238,38 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
     }
 
     /**
-     * @param Order $order
+     * @param $order
+     * @param $data
      * @return bool
-     * 用户收到货后 退款退货审批通过 买家需要在前台填写退货物流 前台有个物流的页面
+     * 退货审批
      */
-    public function return_approve(  $order)
+    public function return_approve_operation($order , $data )
     {
+        $status = $data['suggestion'] == 1 ? 11 : 21;
         try{
-            DB::transaction(function ()use($order){
-                Order::where('order_id',$order)->update([
-                    'order_status' => 11
+            DB::transaction(function ()use($order , $data,$status){
+                //更新订单表
+                DB::table('orders')->where('order_id',$order)->update([
+                    'order_status' => $status
                 ]);
-                $this->updateOrderOperation($order , 11);
+                //更新退款表状态
+                DB::table('order_refund')->where('order_id',$order)->update([
+                    'approve_status' => 1
+                ]);
+
+                $refund_item = OrderRefund::where('order_id',$order)->get()->first();
+
+                //更新comment表 通过或驳回 卖家留言 通过则留地址 不通过则留原因
+                DB::table('comments')->insert([
+                    'user_id' => user()->id,
+                    'body' => $data['content'],
+                    'pid' => 0,
+                    'commentable_id' => $refund_item->id,
+                    'commentable_type' => 'Modules\Sale\Entities\OrderRefund',
+                    'created_at' => Carbon::now()
+                ]);
+
+                $this->updateOrderOperation($order , $status);
             });
         }catch (Exception $e){
             info('refund_return_approve failed' .  $e->getMessage());
@@ -254,6 +277,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
         }
         return true;
     }
+
 
     /**
      * @param $order
@@ -286,5 +310,15 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
             'order_status' => $status,
             'order_status_label' => config('order.status')[$status],
         ]);
+    }
+
+    /**
+     * @param $order
+     * 查询退货原因
+     */
+    public function get_return_reason($order)
+    {
+        $refund = OrderRefund::where('order_id',$order)->get()->first();
+        return $refund->comments ;
     }
 }

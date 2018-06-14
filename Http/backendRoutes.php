@@ -135,9 +135,6 @@ $router->group(['prefix' =>'/sale'], function (Router $router) {
         'uses' => 'CommentController@destroy',
         'middleware' => 'can:sale.comments.destroy'
     ]);
-// append
-
-
 
 
 });

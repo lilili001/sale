@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderRefund extends Model
 {
+//    const TABLE = 'order_refund';
+//    protected $table = self::TABLE;
     protected $table = 'order_refund';
     protected $fillable = [];
 

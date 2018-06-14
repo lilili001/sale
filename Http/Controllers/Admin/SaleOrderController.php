@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Modules\Mpay\Entities\Order;
 use Modules\Mpay\Repositories\OrderRepository;
+use Modules\Sale\Entities\OrderRefund;
 use Modules\Sale\Entities\SaleOrder;
 use Modules\Sale\Http\Requests\CreateSaleOrderRequest;
 use Modules\Sale\Http\Requests\UpdateSaleOrderRequest;
@@ -45,10 +46,16 @@ class SaleOrderController extends AdminBaseController
         return $bool ? AjaxResponse::success('success') : AjaxResponse::fail('fail');
     }
     
-    public function detail(Request $request,$order)
+    public function detail(Request $request,$orderId)
     {
-        $order = Order::where('order_id',$order)->get()->first();
-        return view('sale::admin.saleorders.detail',compact('order'));
+        $order = Order::where('order_id',$orderId)->get()->first();
+        //退款信息查询
+
+        $order_refund = OrderRefund::where('order_id' ,$orderId )->get()->first();
+        dd( $order_refund );
+        //$refund_comments = $order_refund->comments->toArray();
+
+        return view('sale::admin.saleorders.detail',compact('order' , 'refund_comments'));
     }
 
     public function ship(Request $request,$order)

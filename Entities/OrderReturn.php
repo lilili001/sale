@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderReturn extends Model
 {
-    protected $table = 'order_return';
+    const TABLE = 'order_return';
     protected $fillable = [];
+
+    protected $table = self::TABLE;
 
     //退货记录的交流
     public function comments()

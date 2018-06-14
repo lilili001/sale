@@ -4,12 +4,13 @@ use Illuminate\Routing\Router;
 /** @var Router $router */
 
 $router->group(['prefix' =>'/order'], function (Router $router) {
+    //前台订单列表
     $router->get('list',[
         'as' => 'frontend.order.index',
         'uses' => 'PublicController@index',
         'middleware' => 'logged.in'
     ]);
-
+    //订单详情
     $router->get('detail/{order}',[
         'as' => 'frontend.order.detail',
         'uses' => 'PublicController@detail',
@@ -47,7 +48,14 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
     //退货审批通过
     $router->post('refund_return_approve/{order}',[
         'as' => 'frontend.order.return.approve',
-        'uses' => 'PublicController@return_approve',
+        'uses' => 'PublicController@return_approve_operation',
+        'middleware' => 'logged.in'
+    ]);
+
+    //根据订单号查询退货申请人 退货原因
+    $router->post('refund_return_reason/{order}',[
+        'as' => 'frontend.order.return.approve.reason',
+        'uses' => 'PublicController@refund_return_reason',
         'middleware' => 'logged.in'
     ]);
 
@@ -63,4 +71,17 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'uses' => 'PublicController@delete',
         'middleware' => 'logged.in'
     ]);
+    //评论页
+    $router->get('review_create/{order}',[
+        'as' => 'frontend.order.review_create',
+        'uses' => 'ReviewController@review_create',
+        'middleware' => 'logged.in'
+    ]);
+    //评论提交
+    $router->post('review_save/{order}',[
+        'as' => 'frontend.order.review_save',
+        'uses' => 'ReviewController@review_save',
+        'middleware' => 'logged.in'
+    ]);
+
 });
