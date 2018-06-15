@@ -25,4 +25,6 @@ interface SaleOrderRepository extends BaseRepository
     public function get_return_reason($order);
 
     public function return_approve_operation($order , $data );
+
+    public function confirm_receipt($order);
 }

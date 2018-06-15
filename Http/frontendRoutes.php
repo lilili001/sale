@@ -71,17 +71,32 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'uses' => 'PublicController@delete',
         'middleware' => 'logged.in'
     ]);
+
+    //前台确认收货
+    $router->get('receive/{order}',[
+        'as' => 'frontend.order.confirm_receipt',
+        'uses' => 'PublicController@confirm_receipt',
+        'middleware' => 'logged.in'
+    ]);
+
     //评论页
     $router->get('review_create/{order}',[
         'as' => 'frontend.order.review_create',
         'uses' => 'ReviewController@review_create',
         'middleware' => 'logged.in'
     ]);
-    //评论提交
+
+    //产品评论提交
     $router->post('review_save/{order}',[
         'as' => 'frontend.order.review_save',
         'uses' => 'ReviewController@review_save',
         'middleware' => 'logged.in'
     ]);
 
+    //产品评论回复提交
+    $router->post('review_reply_save',[
+        'as' => 'frontend.order.review_reply_save',
+        'uses' => 'ReviewController@review_reply_save',
+        'middleware' => 'logged.in'
+    ]);
 });

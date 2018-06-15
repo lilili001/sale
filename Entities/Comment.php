@@ -7,6 +7,7 @@ use Modules\User\Entities\Sentinel\User;
 
 class Comment extends Model
 {
+    /*普通品论 商品咨询 退款退货交流沟通*/
     protected $table = 'comments';
     protected $guarded = [];
 

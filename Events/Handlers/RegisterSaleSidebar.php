@@ -79,7 +79,17 @@ class RegisterSaleSidebar implements \Maatwebsite\Sidebar\SidebarExtender
                         $this->auth->hasAccess('sale.comments.index')
                     );
                 });
+                $item->item(trans('sale::orderreviews.title.orderreviews'), function (Item $item) {
+                    $item->icon('fa fa-copy');
+                    $item->weight(0);
+                    $item->append('admin.sale.orderreview.create');
+                    $item->route('admin.sale.orderreview.index');
+                    $item->authorize(
+                        $this->auth->hasAccess('sale.orderreviews.index')
+                    );
+                });
 // append
+
 
 
 

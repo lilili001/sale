@@ -321,4 +321,22 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
         $refund = OrderRefund::where('order_id',$order)->get()->first();
         return $refund->comments ;
     }
+
+    /**
+     * @param $order
+     * 确认收货
+     */
+    public function confirm_receipt($order){
+        try{
+            DB::transaction(function()use($order){
+                Order::where('order_id',$order)->update(['order_status' => 9 ,'consign_time' => Carbon::now ]);//付款成功 //后续紧随状态修改为正在出库6
+                $this->updateOrderOperation($order , 9);
+            });
+
+        }catch (Exception $e){
+            info( 'confirm order receipt error:' .  $e->getMessage() );
+            return false;
+        }
+        return true;
+    }
 }

@@ -33,7 +33,9 @@ class SaleServiceProvider extends ServiceProvider
             $event->load('orderrefunds', array_dot(trans('sale::orderrefunds')));
             $event->load('orderreturns', array_dot(trans('sale::orderreturns')));
             $event->load('comments', array_dot(trans('sale::comments')));
+            $event->load('orderreviews', array_dot(trans('sale::orderreviews')));
             // append translations
+
 
 
 
@@ -108,7 +110,20 @@ class SaleServiceProvider extends ServiceProvider
                 return new \Modules\Sale\Repositories\Cache\CacheCommentDecorator($repository);
             }
         );
+        $this->app->bind(
+            'Modules\Sale\Repositories\OrderReviewRepository',
+            function () {
+                $repository = new \Modules\Sale\Repositories\Eloquent\EloquentOrderReviewRepository(new \Modules\Sale\Entities\OrderReview());
+
+                if (! config('app.cache')) {
+                    return $repository;
+                }
+
+                return new \Modules\Sale\Repositories\Cache\CacheOrderReviewDecorator($repository);
+            }
+        );
 // add bindings
+
 
 
 

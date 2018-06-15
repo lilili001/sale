@@ -136,5 +136,39 @@ $router->group(['prefix' =>'/sale'], function (Router $router) {
         'middleware' => 'can:sale.comments.destroy'
     ]);
 
+    /*订单商品评论*/
+    $router->bind('orderreviews', function ($id) {
+        return app('Modules\Sale\Repositories\CommentRepository')->find($id);
+    });
+    $router->get('orderreviews', [
+        'as' => 'admin.sale.orderreview.index',
+        'uses' => 'OrderReviewController@index',
+        'middleware' => 'can:sale.orderreviews.index'
+    ]);
+    $router->get('orderreviews/create', [
+        'as' => 'admin.sale.orderreview.create',
+        'uses' => 'OrderReviewController@create',
+        'middleware' => 'can:sale.orderreviews.create'
+    ]);
+    $router->post('orderreviews', [
+        'as' => 'admin.sale.orderreview.store',
+        'uses' => 'OrderReviewController@store',
+        'middleware' => 'can:sale.orderreviews.create'
+    ]);
+    $router->get('orderreviews/{orderreview}/edit', [
+        'as' => 'admin.sale.orderreview.edit',
+        'uses' => 'OrderReviewController@edit',
+        'middleware' => 'can:sale.orderreviews.edit'
+    ]);
+    $router->put('orderreviews/{orderreview}', [
+        'as' => 'admin.sale.orderreview.update',
+        'uses' => 'OrderReviewController@update',
+        'middleware' => 'can:sale.orderreviews.edit'
+    ]);
+    $router->delete('orderreviews/{orderreview}', [
+        'as' => 'admin.sale.orderreview.destroy',
+        'uses' => 'OrderReviewController@destroy',
+        'middleware' => 'can:sale.orderreviews.destroy'
+    ]);
 
 });

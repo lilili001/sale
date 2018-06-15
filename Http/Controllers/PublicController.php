@@ -178,4 +178,19 @@ class PublicController extends AdminBaseController
         $applier = User::find( $comment->first()->user_id );
         return $comment ? AjaxResponse::success('成功', compact('comment','applier')) : AjaxResponse::fail('失败');
     }
+
+    public function confirm_receipt($order)
+    {
+        try{
+            $bool = $this->saleorder->confirm_receipt($order);
+
+        }catch (Exception $e){
+            return $e->getMessage();
+        }
+
+        return redirect()
+            ->route('frontend.order.review_create',['order'=>$order])
+            ->with('order_complete','The goods are received, please make reviews for the goods');
+
+    }
 }
