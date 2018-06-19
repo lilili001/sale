@@ -15,6 +15,7 @@ use App\Services\ImageH;
 use Illuminate\Http\Request;
 use Modules\Mpay\Entities\Order;
 use Modules\Sale\Entities\OrderReview;
+use Modules\Sale\Entities\ProductReviewReply;
 use Modules\Sale\Repositories\OrderReviewRepository;
 
 /**
@@ -23,7 +24,15 @@ use Modules\Sale\Repositories\OrderReviewRepository;
  */
 class ReviewController extends Controller
 {
+    /**
+     * @var OrderReviewRepository
+     */
     protected $order_review;
+
+    /**
+     * ReviewController constructor.
+     * @param OrderReviewRepository $order_review
+     */
     public function __construct(OrderReviewRepository $order_review)
     {
         $this->order_review = $order_review;
@@ -92,10 +101,56 @@ class ReviewController extends Controller
         return redirect('/')->with('message','Thank you for your operation, your reviews are under processing');
     }
 
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function review_reply_save(Request $request)
     {
         $data = $request->all();
         $bool = $this->order_review->create($data);
         return $bool ? AjaxResponse::success('') : AjaxResponse::fail('');
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     * 产品评论点赞
+     */
+    public function product_comment_vote(Request $request)
+    {
+        $type = $request->get('up');
+        $itemType = $request->get('item_type');
+        if($itemType == 'product_review'){
+            $item = OrderReview::findOrFail($request->get('id'));
+        }else{
+            $item = ProductReviewReply::findOrFail( $request->get('id') );
+        }
+        //dd($item->toArray());
+        try{
+            if($type){
+                if( user()->hasUpvoted($item) == false ){
+                   $res = user()->vote($item);
+                }else{
+                    $res = user()->cancelVote($item);
+                }
+            }else{
+                if( user()->hasDownvoted($item) == false ){
+                    $res = user()->downvote($item);
+                }else{
+                    $res = user()->cancelVote($item);
+                }
+            }
+        }catch (Exception $e){
+            return AjaxResponse::fail('',$e->getMessage());
+        }
+
+        $upvotes = count( $item->voters()->get() );
+        $downvotes = count( $item->downvoters()->get() );
+
+        return AjaxResponse::success('',[
+            'upvotes' => $upvotes,
+            'downvotes' => $downvotes
+        ]);
     }
 }

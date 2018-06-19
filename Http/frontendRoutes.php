@@ -99,4 +99,11 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'uses' => 'ReviewController@review_reply_save',
         'middleware' => 'logged.in'
     ]);
+
+    //产品评论赞
+    $router->post('product_comment_vote',[
+        'as' => 'frontend.order.product_comment_vote',
+        'uses' => 'ReviewController@product_comment_vote',
+        'middleware' => 'logged.in'
+    ]);
 });
