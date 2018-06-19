@@ -4,7 +4,7 @@ namespace Modules\Sale\Entities;
 
 use Dimsav\Translatable\Translatable;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Product\Entities\Product;
+use Modules\Mpay\Entities\OrderProduct;
 use Overtrue\LaravelFollow\Traits\CanBeVoted;
 
 class OrderReview extends Model
@@ -16,5 +16,10 @@ class OrderReview extends Model
     public function replies()
     {
         return $this->hasMany(ProductReviewReply::class ,'product_comment_id' );
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(OrderProduct::class,'goods_id','item_id');
     }
 }

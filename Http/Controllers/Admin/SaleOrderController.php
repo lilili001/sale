@@ -52,7 +52,7 @@ class SaleOrderController extends AdminBaseController
         //退款信息查询
 
         $order_refund = OrderRefund::where('order_id' ,$orderId )->get()->first();
-        dd( $order_refund );
+
         //$refund_comments = $order_refund->comments->toArray();
 
         return view('sale::admin.saleorders.detail',compact('order' , 'refund_comments'));

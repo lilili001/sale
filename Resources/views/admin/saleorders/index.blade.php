@@ -197,8 +197,8 @@
                 //获取买家退货原因 传订单号给后台 后台根据订单号查退款相关信息
                 $.post(route('frontend.order.return.approve.reason',{order:order}) ,{_token:'{{csrf_token()}}'} ).then(function(res){
                     var  data = res.result;
-                    $('#return_approve_modal .reason-body').text( data.comment.body );
-                    var imgList = data.comment.img_url.split(';');
+                    $('#return_approve_modal .reason-body').text( data.comment[0].body );
+                    var imgList = data.comment[0].img_url.split(';');
                     var imgstr = '';
                     $.each(imgList,function(index,item){
                         imgstr += '<a class="mar-r4" href="'+'/images/' + item+'" data-lightbox="roadtrip"><img height="35" src="/images/'+item+'"></a>'
