@@ -16,7 +16,7 @@
                 <input type="hidden" name="order_id" value="{{ $order->id }}">
                 <span>订单基本信息</span> ( <span class="text <?php
                     //如果是退货相关的 点击此按钮 弹出 买卖双方 退货对话
-                    if( in_array( $order->order_status , [15,16,17,10,11,12,13,21] ) ){
+                    if( $order->is_shipped && in_array( $order->order_status , [15,16,17,10,11,12,13,21] ) ){
                         echo "refund_process";
                     }
 
@@ -116,11 +116,11 @@
                                 </div>
                                 <div class="media-body">
                                     <h5 class="media-heading">{{ $item->title  }}</h5>
-                                    <dl>
+                                    <div>
                                         @foreach( json_decode($item->options)->selectedItemLocale as $key=>$value )
-                                            <dd>{{ $key .':'.$value  }}</dd>
+                                            <span> {{ $loop->first ? '' : ','  }} {{ $key .':'.$value  }}</span>
                                         @endforeach
-                                    </dl>
+                                    </div>
                                 </div>
                             </div>  </td>
                         <td> {{ $order->currency . ' ' . $item->unit_price_current_currency  }} </td>

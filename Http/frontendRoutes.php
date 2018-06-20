@@ -32,7 +32,7 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
     ]);
 
     //退款审批
-    $router->post('refund-approve/{order}',[
+    $router->post('refund-approve/{refundId}',[
         'as' => 'frontend.order.refund.approve',
         'uses' => 'PublicController@refund_approve',
         'middleware' => 'logged.in'

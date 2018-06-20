@@ -29,35 +29,35 @@
                         <table class="data-table table table-bordered table-hover">
                             <thead>
                             <tr>
-                                <th>{{ trans('core::core.table.created at') }}</th>
-                                <th data-sortable="false">{{ trans('core::core.table.actions') }}</th>
+                                <th>退款编号</th>
+                                <th>订单编号</th>
+                                <th>买家</th>
+                                <th>交易金额</th>
+                                <th>退款金额</th>
+                                <th>申请时间</th>
+                                <th>退款时间</th>
+                                <th>退款状态</th>
+                                <th>操作</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php if (isset($orderrefunds)): ?>
                             <?php foreach ($orderrefunds as $orderrefund): ?>
                             <tr>
-                                <td>
-                                    <a href="{{ route('admin.sale.orderrefund.edit', [$orderrefund->id]) }}">
-                                        {{ $orderrefund->created_at }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="{{ route('admin.sale.orderrefund.edit', [$orderrefund->id]) }}" class="btn btn-default btn-flat"><i class="fa fa-pencil"></i></a>
-                                        <button class="btn btn-danger btn-flat" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.sale.orderrefund.destroy', [$orderrefund->id]) }}"><i class="fa fa-trash"></i></button>
-                                    </div>
-                                </td>
+                                <td> {{$orderrefund->refund_no}} </td>
+                                <td> {{$orderrefund->order_id}} </td>
+                                <td> {{$orderrefund->payerId}} </td>
+                                <td> {{$orderrefund->payerId}} </td>
+                                <td> {{$orderrefund->amount}} </td>
+                                <td> {{$orderrefund->created_at}} </td>
+                                <td> {{$orderrefund->updated_at}} </td>
+                                <td> {{ $orderrefund->refund_status ? '已退款' : '未退款' }} </td>
+                                <td> <span class="approve-refund" data-refund_id="{{ $orderrefund->refund_no }}">{{ $orderrefund->refund_status || $orderrefund->updated_at ? '' : '退款' }}</span>  </td>
                             </tr>
                             <?php endforeach; ?>
                             <?php endif; ?>
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <th>{{ trans('core::core.table.created at') }}</th>
-                                <th>{{ trans('core::core.table.actions') }}</th>
-                            </tr>
-                            </tfoot>
+
                         </table>
                         <!-- /.box-body -->
                     </div>
@@ -99,10 +99,25 @@
                 "sort": true,
                 "info": true,
                 "autoWidth": true,
-                "order": [[ 0, "desc" ]],
+                "order": [[ 5, "asc" ]],
                 "language": {
                     "url": '<?php echo Module::asset("core:js/vendor/datatables/{$locale}.json") ?>'
                 }
+            });
+
+            //退款操作
+            $('.approve-refund').click(function(){
+                console.log(123)
+                var _this = this;
+                $.post(route('frontend.order.refund.approve',{refundId: $(_this).data('refund_id') }),
+                    {
+                        _token:'{{csrf_token()}}'
+                    }).then(function(res){
+                      if(res.code == 0){
+                          alert('退款成功');
+                          location.reload()
+                      }
+                })
             });
         });
     </script>

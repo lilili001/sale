@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Core\Traits\CanPublishConfiguration;
 use Modules\Core\Events\BuildingSidebar;
 use Modules\Core\Events\LoadingBackendTranslations;
+use Modules\Mpay\Entities\Order;
 use Modules\Sale\Events\Handlers\RegisterSaleSidebar;
 
 class SaleServiceProvider extends ServiceProvider
@@ -65,7 +66,7 @@ class SaleServiceProvider extends ServiceProvider
         $this->app->bind(
             'Modules\Sale\Repositories\SaleOrderRepository',
             function () {
-                $repository = new \Modules\Sale\Repositories\Eloquent\EloquentSaleOrderRepository(new \Modules\Sale\Entities\SaleOrder());
+                $repository = new \Modules\Sale\Repositories\Eloquent\EloquentSaleOrderRepository(new Order());
 
                 if (! config('app.cache')) {
                     return $repository;

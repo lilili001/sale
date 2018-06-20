@@ -111,10 +111,11 @@ class PublicController extends AdminBaseController
      * @param $order
      * 退款申请 后台人工点击审批通过 退款
      */
-    public function refund_apply( $order )
+    public function refund_apply( Request $request, $order )
     {
+        $data = array_merge( ['order'=>$order] , $request->all() );
         try{
-            $bool = $this->saleorder->refund_apply($order);
+            $bool = $this->saleorder->refund_apply( $data );
         }catch (Exception $e){
             return AjaxResponse::fail('退款申请失败');
         }
@@ -125,15 +126,19 @@ class PublicController extends AdminBaseController
      * @param Order $order
      * @return mixed
      */
-    public function refund_approve(Order $order)
+    public function refund_approve( $refundId)
     {
+        $orderRefund =OrderRefund::where('refund_no',$refundId)->get()->first();
+
+        $order = Order::where('order_id',$orderRefund->order_id)->get()->first();
+
         try{
-           $bool =  $this->saleorder->refund_approve($order);
+           $bool = $this->saleorder->refund_approve($order->order_id,$refundId);
            //如果审批通过则立即退款
            if($bool){
                $this->order->refund( $order->transaction_id, [
-                   'currency' => $order->currency,
-                   'amount'   => $order->amount_current_currency
+                   'currency' => $orderRefund->currency,
+                   'amount'   => $orderRefund->amount
                ]);
            }
         }catch (Exception $e){

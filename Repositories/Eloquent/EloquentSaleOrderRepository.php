@@ -133,15 +133,29 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @return bool
      * 买家：退款申请
      */
-    public function refund_apply($order){
+    public function refund_apply($data){
         try{
-            DB::transaction(function() use ($order){
-                Order::where('order_id',$order)
+            DB::transaction(function() use ($data){
+                Order::where('order_id',$data['order'])
                     ->update([
-                        'order_status' => 15 //退款申请
+                        'order_status' => 15, //退款申请
                     ]);
 
-                $this->updateOrderOperation($order , 15);
+                //退款表插入一条申请数据
+                $data1 = [
+                    'refund_no' => build_no('RE'),
+                    'order_id' => $data['order'],
+                    'is_order_shipped' => 0,
+                    'need_return_goods' => 0,
+                    'amount' => $data['amount'],
+                    'item_id' => $data['itemid'],//order item id,并非产品id
+                    'currency'=> $data['currency'],
+                    'created_at' => Carbon::now(),
+                    'user_id' => user()->id
+                ];
+                DB::table('order_refund')->insert($data1);
+
+                $this->updateOrderOperation($data['order'] , 15);
             });
         }catch (Exception $e){
             info( 'apply refund error:' .  $e->getMessage());
@@ -155,15 +169,21 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @return bool
      * 卖家：退款申请审批通过
      */
-    public function refund_approve($order)
+    public function refund_approve($order,$refundId)
     {
+        info($order);
         try{
-            DB::transaction(function()use ( $order ){
+            DB::transaction(function()use ( $order ,$refundId ){
 
-                Order::where('order_id',$order)
+                DB::table('orders')->where('order_id',$order)
                     ->update([
                         'order_status' => 16 //退款申请 审批通过
                     ]);
+
+                DB::table('order_refund')->where('refund_no',$refundId)->update([
+                    'approve_status' => 1,
+                    'updated_at' => Carbon::now()
+                ]);
 
                 $this->updateOrderOperation($order , 16);
             });
@@ -191,17 +211,11 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
                     'is_order_shipped' => $c_order->is_shipped,
                     'need_return_goods'=> $c_order->is_shipped != 0,
                     'user_id' => user()->id,
-                    'created_at' => Carbon::now()
+                    'created_at' => Carbon::now(),
+                    'goods_id' => $data['item_id']
                 ];
 
-                $refund_order =  OrderRefund::where('order_id',$order)->get()->first() ;
-                if (  !empty($refund_order)  ){
-                    //OrderRefund::where('order_id',$order)->update($data_arr);
-                    $order_refund_item = DB::table('order_refund')->where( 'order_id',$order )->update($data_arr);
-                }else{
-                    //OrderRefund::create($data_arr);
-                    $order_refund_item = DB::table('order_refund')->insert($data_arr);
-                }
+                DB::table('order_refund')->insert($data_arr);
 
                 $refund_order =  OrderRefund::where('order_id',$order)->get()->first() ;
 
@@ -329,7 +343,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
     public function confirm_receipt($order){
         try{
             DB::transaction(function()use($order){
-                Order::where('order_id',$order)->update(['order_status' => 9 ,'consign_time' => Carbon::now ]);//付款成功 //后续紧随状态修改为正在出库6
+                Order::where('order_id',$order)->update(['order_status' => 9 ,'consign_time' => Carbon::now() ]);//付款成功 //后续紧随状态修改为正在出库6
                 $this->updateOrderOperation($order , 9);
             });
 

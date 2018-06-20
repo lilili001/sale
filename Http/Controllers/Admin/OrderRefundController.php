@@ -31,9 +31,8 @@ class OrderRefundController extends AdminBaseController
      */
     public function index()
     {
-        //$orderrefunds = $this->orderrefund->all();
-
-        return view('sale::admin.orderrefunds.index', compact(''));
+        $orderrefunds = $this->orderrefund->all();
+        return view('sale::admin.orderrefunds.index', compact('orderrefunds'));
     }
 
     /**

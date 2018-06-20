@@ -16,9 +16,9 @@ interface SaleOrderRepository extends BaseRepository
 
     public function confirm_order_receipt($order);
 
-    public function refund_apply($order);
+    public function refund_apply($data);
 
-    public function refund_approve($order);
+    public function refund_approve($order,$refundId);
 
     public function refund_return_apply($order , $data);
 
