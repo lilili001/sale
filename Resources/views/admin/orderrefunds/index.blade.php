@@ -34,6 +34,7 @@
                                 <th>买家</th>
                                 <th>交易金额</th>
                                 <th>退款金额</th>
+                                <th>是否要求退货</th>
                                 <th>申请时间</th>
                                 <th>退款时间</th>
                                 <th>退款状态</th>
@@ -49,10 +50,25 @@
                                 <td> {{$orderrefund->payerId}} </td>
                                 <td> {{$orderrefund->payerId}} </td>
                                 <td> {{$orderrefund->amount}} </td>
+                                <td> {{$orderrefund->need_return_goods ? '是' : '否'   }}   </td>
                                 <td> {{$orderrefund->created_at}} </td>
                                 <td> {{$orderrefund->updated_at}} </td>
                                 <td> {{ $orderrefund->refund_status ? '已退款' : '未退款' }} </td>
-                                <td> <span class="approve-refund" data-refund_id="{{ $orderrefund->refund_no }}">{{ $orderrefund->refund_status || $orderrefund->updated_at ? '' : '退款' }}</span>  </td>
+                                <td>
+                                    {{--如果不要求退货的 可以直接审批退款一个步骤--}}
+                                    @if( $orderrefund->approve_status == 1 )
+                                        {{--如果需要退货 则卖家收到货后才显示退款按钮--}}
+                                    <?php
+                                        $orderProduct = $orderrefund->item()->get()->first();
+                                        $returnGood = $orderProduct->goods_return()->first();
+                                    ?>
+                                        @if( $orderrefund->need_return_goods && isset($returnGood->shipping_time) )
+                                            <span class="approve-refund" data-refund_id="{{ $orderrefund->refund_no }}">{{ $orderrefund->refund_status || $orderrefund->updated_at ? '' : '退款' }}</span>
+                                        @else
+                                            <span class="approve-refund" data-refund_id="{{ $orderrefund->refund_no }}">{{ $orderrefund->refund_status || $orderrefund->updated_at ? '' : '退款' }}</span>
+                                        @endif
+                                     @endif
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                             <?php endif; ?>
@@ -99,7 +115,7 @@
                 "sort": true,
                 "info": true,
                 "autoWidth": true,
-                "order": [[ 5, "asc" ]],
+                "order": [[ 6, "asc" ]],
                 "language": {
                     "url": '<?php echo Module::asset("core:js/vendor/datatables/{$locale}.json") ?>'
                 }
@@ -107,7 +123,6 @@
 
             //退款操作
             $('.approve-refund').click(function(){
-                console.log(123)
                 var _this = this;
                 $.post(route('frontend.order.refund.approve',{refundId: $(_this).data('refund_id') }),
                     {

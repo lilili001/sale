@@ -212,7 +212,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
                     'need_return_goods'=> $c_order->is_shipped != 0,
                     'user_id' => user()->id,
                     'created_at' => Carbon::now(),
-                    'goods_id' => $data['item_id']
+                    'item_id' => $data['item_id'] //order_item的id
                 ];
 
                 DB::table('order_refund')->insert($data_arr);
@@ -349,6 +349,37 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
 
         }catch (Exception $e){
             info( 'confirm order receipt error:' .  $e->getMessage() );
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param $orderItem
+     * 买家填写退货单
+     */
+    public function return_order($data){
+
+        try{
+            unset( $data['_token'] );
+            $data = [
+               'order_id' => $data['orderid'],
+               'goods_id' => $data['itemid'],
+               'delivery' => $data['delivery'],
+               'tracking_no' => $data['tracking_no'],
+               'created_at' => Carbon::now(),
+               'shipping_time' => Carbon::now(),
+               'return_status' => 1
+            ] ;
+            DB::transaction(function() use($data) {
+                DB::table('orders')->where('order_id',$data['order_id'])->update(['order_status' => 12]);
+                $this->updateOrderOperation($data['order_id'] , 12);
+
+                DB::table('order_return')->insert($data);
+            });
+
+        }catch (Exception $e){
+            info('return order error:',$e->getMessage());
             return false;
         }
         return true;

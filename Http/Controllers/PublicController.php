@@ -196,6 +196,12 @@ class PublicController extends AdminBaseController
         return redirect()
             ->route('frontend.order.review_create',['order'=>$order])
             ->with('order_complete','The goods are received, please make reviews for the goods');
+    }
 
+    public function return_order( Request $request)
+    {
+        $data = $request->all();
+        $bool = $this->saleorder->return_order($data);
+        return $bool ? AjaxResponse::success('') : AjaxResponse::fail('');
     }
 }

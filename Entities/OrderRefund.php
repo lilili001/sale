@@ -3,6 +3,7 @@
 namespace Modules\Sale\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\Mpay\Entities\OrderProduct;
 
 class OrderRefund extends Model
 {
@@ -15,5 +16,10 @@ class OrderRefund extends Model
     public function comments()
     {
         return $this->morphMany(Comment::class,'commentable');
+    }
+
+    public function item()
+    {
+        return $this->hasOne(OrderProduct::class,'id','item_id');
     }
 }

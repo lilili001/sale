@@ -79,6 +79,13 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'middleware' => 'logged.in'
     ]);
 
+    //前台填写退货单
+    $router->post('return/orderitem',[
+        'as' => 'frontend.order.return_order',
+        'uses' => 'PublicController@return_order',
+        'middleware' => 'logged.in'
+    ]);
+
     //评论页
     $router->get('review_create/{order}',[
         'as' => 'frontend.order.review_create',
