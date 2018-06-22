@@ -8,13 +8,13 @@ use Modules\Mpay\Entities\Order;
 interface SaleOrderRepository extends BaseRepository
 {
     public function all();
-    public function ship($order,$data );
+    public function ship($order,$data ,$tracking );
     public function confirm_payment($order);
     public function updateOrderOperation($order,$status);
     public function cancel($order);
     public function order_with_supplier($order);
 
-    public function confirm_order_receipt($order);
+    public function confirm_order_receipt($order ,$updateTime );
 
     public function refund_apply($data);
 
@@ -28,5 +28,6 @@ interface SaleOrderRepository extends BaseRepository
 
     public function confirm_receipt($order);
 
-    public function return_order($data);
+    public function return_order($data,$tracking);
+    public function shipping_webhook($data);
 }

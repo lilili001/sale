@@ -9,10 +9,13 @@ use Modules\Mpay\Entities\Order;
 use Modules\Mpay\Entities\OrderOperation;
 use Modules\Mpay\Repositories\OrderRepository;
 use Modules\Sale\Entities\OrderRefund;
+use Modules\Sale\Entities\OrderReturn;
 use Modules\Sale\Entities\SaleOrder;
 use Modules\Sale\Repositories\SaleOrderRepository;
 use Modules\Core\Http\Controllers\Admin\AdminBaseController;
 use AjaxResponse;
+use Modules\Sale\Repositories\TrackingRepository;
+use Modules\Sale\Trackingmore;
 use Modules\User\Entities\Sentinel\User;
 
 /**
@@ -29,17 +32,19 @@ class PublicController extends AdminBaseController
      * @var
      */
     private $order;
+    private $tracking;
 
     /**
      * PublicController constructor.
      * @param SaleOrderRepository $saleorder
      * @param OrderRepository $order
      */
-    public function __construct(SaleOrderRepository $saleorder , OrderRepository $order )
+    public function __construct(SaleOrderRepository $saleorder , OrderRepository $order , TrackingRepository $tracking )
     {
         parent::__construct();
         $this->saleorder = $saleorder;
         $this->order = $order;
+        $this->tracking = $tracking;
     }
 
     /**
@@ -73,8 +78,12 @@ class PublicController extends AdminBaseController
         if( $request->expectsJson() ){
             return Ajaxresponse::success('',compact('order' ));
         }
-
-        return view('usercenter.order-detail',compact('order', 'refund_comments','pageClass'));
+        //发货物流追踪信息 查询接口
+        $shipping = $order->delivery()->get()->first();
+        if ( isset($shipping) ){
+            $tracking =  $this->tracking->getSingleTrackingResult( $shipping->delivery , $shipping->tracking_number , 'en' )  ;
+        }
+        return view('usercenter.order-detail',compact('order', 'refund_comments','pageClass' ,'tracking'));
     }
 
     /**
@@ -201,7 +210,7 @@ class PublicController extends AdminBaseController
     public function return_order( Request $request)
     {
         $data = $request->all();
-        $bool = $this->saleorder->return_order($data);
+        $bool = $this->saleorder->return_order($data ,$this->tracking );
         return $bool ? AjaxResponse::success('') : AjaxResponse::fail('');
     }
 }

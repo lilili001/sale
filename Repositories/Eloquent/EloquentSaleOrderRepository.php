@@ -10,9 +10,12 @@ use Modules\Mpay\Entities\OrderOperation;
 use Modules\Mpay\Repositories\OrderRepository;
 use Modules\Sale\Entities\Comment;
 use Modules\Sale\Entities\OrderRefund;
+use Modules\Sale\Entities\OrderReturn;
 use Modules\Sale\Repositories\SaleOrderRepository;
 use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
 use Carbon\Carbon;
+use Modules\Sale\Repositories\TrackingRepository;
+use Modules\Sale\Trackingmore;
 
 /**
  * Class
@@ -20,6 +23,11 @@ use Carbon\Carbon;
  */
 class EloquentSaleOrderRepository extends EloquentBaseRepository implements SaleOrderRepository
 {
+    /**
+     * EloquentSaleOrderRepository constructor.
+     * @param TrackingRepository $tracking
+     */
+
     /**
      * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
@@ -77,10 +85,10 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @return bool
      * 点击发货
      */
-    public function ship($order, $data)
+    public function ship($order, $data,$tracking)
     {
         try{
-            DB::transaction(function() use( $order, $data ) {
+            DB::transaction(function() use( $order, $data , $tracking ) {
                 Order::where('order_id',$order)
                     ->update([
                         'is_paid' => 1,
@@ -97,6 +105,9 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
                 ]);
 
                 $this->updateOrderOperation($order , 7);
+
+                //创建一个追踪项目
+                $tracking->createTracking( $order, $data['shipping_method'], $data['tracking_number'] );
             });
         }catch (Exception $e){
             info( 'shipping order error:' .  $e->getMessage());
@@ -109,14 +120,15 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @param $order
      * @return bool
      * 买家：确认收货 或者 物流签收后 自动更行
-     * todo 定时任务
+     * todo 用webhook
      */
-    public function confirm_order_receipt($order){
+    public function confirm_order_receipt($order,$updateTime){
         try{
-            DB::transaction(function()use($order){
+            DB::transaction(function()use($order,$updateTime){
                 Order::where('order_id',$order)
                     ->update([
-                        'order_status' => 9 //订单完成
+                        'order_status' => 9, //订单完成
+                        'consignee_time' =>$updateTime
                     ]);
 
                 $this->updateOrderOperation($order , 9);
@@ -358,7 +370,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
      * @param $orderItem
      * 买家填写退货单
      */
-    public function return_order($data){
+    public function return_order($data,$tracking){
 
         try{
             unset( $data['_token'] );
@@ -374,14 +386,78 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
             DB::transaction(function() use($data) {
                 DB::table('orders')->where('order_id',$data['order_id'])->update(['order_status' => 12]);
                 $this->updateOrderOperation($data['order_id'] , 12);
-
                 DB::table('order_return')->insert($data);
             });
+
+            //创建一个追踪项目
+            $tracking->createTracking( $data['orderid'], $data['delivery'], $data['tracking_no'] );
 
         }catch (Exception $e){
             info('return order error:',$e->getMessage());
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param $data
+     * "pending": 0,
+    "notfound": 3,
+    "transit": 5,
+    "pickup": 0,
+    "delivered": 25,
+    "undelivered": 0,
+    "exception": 0,
+    "expired": 1
+     */
+    public function shipping_webhook($data )
+    {
+        //如果已签收则更改订单状态
+        $webhook_data = $data['data'];
+        if($webhook_data['status'] == 'pickup' ){
+            $this->confirm_order_receipt($webhook_data['order_id'] ,$data['updated_at'] ) ;
+        }
+
+        $order = Order::where('order_id' , $webhook_data['order_id'])->get()->first();
+
+        //更新发货表
+        $order->delivery()->update([
+            'status' => $data['status'],
+            'updated_at' => $data['updated_at']
+        ]);
+
+        //退货物流 查询退货表是否有满足条件的 如果有则更新
+        $orderid = $webhook_data['order_id'];
+        $orderreturn = OrderReturn::where([
+            'order_id' => $orderid,
+            'tracking_no' => $webhook_data['tracking_number']
+        ])->get();
+
+        if( count( $orderreturn ) > 0 && $webhook_data['status'] == 'pickup' ){
+            OrderReturn::where([
+                'order_id' => $orderid,
+                'tracking_no' => $webhook_data['tracking_number']
+            ])->update([
+                'update_time' =>$webhook_data['updated_at'] ,
+                'pickup_time' => Carbon::now()
+            ]);
+        }
+
+        info(now().'webhook' );
+
+        //更新物流追踪信息写入数据库
+        $shipping = $order->delivery()->get()->first();
+
+        $tracking_data = [
+            'order_id' => $webhook_data['order_id'],
+            'tracking_number' => $webhook_data['tracking_number'],
+            'carrier' => $webhook_data['carrier_code'],
+            'status' => $webhook_data['status'],
+            'original_country' => $webhook_data['original_country'],
+            'destination_country' => $webhook_data['destination_country'],
+            'origin_info' => json_encode( $webhook_data['origin_info'] ),
+            'destination_info' => json_encode( $webhook_data['destination_info'] )
+        ];
+        $shipping->tracking()->create($tracking_data);
     }
 }

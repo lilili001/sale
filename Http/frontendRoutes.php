@@ -113,4 +113,17 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'uses' => 'ReviewController@product_comment_vote',
         'middleware' => 'logged.in'
     ]);
+
+    //trackingmore test
+    $router->get('trackingmore',[
+        'as' => 'frontend.order.tracking',
+        'uses' => 'TrackingController@index',
+        'middleware' => 'logged.in'
+    ]);
+
+    $router->post('getSingleTrackingResult',[
+        'as' => 'frontend.order.getSingleTrackingResult',
+        'uses' => 'TrackingController@getSingleTrackingResult',
+        'middleware' => 'logged.in'
+    ]);
 });

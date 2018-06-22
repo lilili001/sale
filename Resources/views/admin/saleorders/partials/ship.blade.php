@@ -16,8 +16,8 @@
                       <label for="inputEmail3" class="col-sm-2 control-label">Shipping Method</label>
                       <div class="col-sm-10">
                         <select class="form-control" name="shipping_method" id="">
-                            @foreach( config('order.shipping_method') as  $key=>$shipping )
-                            <option value="{{$key}}">{{$shipping}}</option>
+                            @foreach( getCarrierList()['data'] as  $key=>$shipping )
+                            <option value="{{$shipping['code']}}">{{$shipping['name']}}</option>
                               @endforeach
                         </select>
                       </div>

@@ -52,6 +52,7 @@
                 @endif
             </div>
 
+
             <section class="order_basic_info">
                 <div class="row mar-b10">
                     <div class="col-md-4">
@@ -94,42 +95,201 @@
                 </div>
             @endif
 
-            <hr>
-            <h4>Product Info</h4>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th width="280">Items</th>
-                    <th>Unit Price</th>
-                    <th>Qty(pcs)</th>
-                    <th>SubTotal</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach( $order->product as $item )
-                    <tr>
-                        <td> <div class="media">
-                                <div class="media-left">
-                                    <a href="#">
-                                        <img class="media-object" src="{{$item->pic_path}}" alt="...">
-                                    </a>
+            {{--************物流信息****************--}}
+            @if( $tracking['meta']['code'] == 200 )
+                <hr>
+                <section>
+                    <h4>物流信息</h4>
+
+                    <div>运单号：{{$tracking['data']['tracking_number']}} ,{{$tracking['data']['carrier_code']}} ,{{$tracking['data']['status']}} </div>
+                    <div>发货国家：{{$tracking['data']['original_country']}}, 收货国家：{{$tracking['data']['destination_country']}}</div>
+                    <div>{{$tracking['data']['updated_at']}} <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#shippingDetail">
+                            查看详情
+                        </button> </div>
+
+                {{--alix start--}}
+                <!-- Modal -->
+                    <div class="modal fade" id="shippingDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">物流追踪</h4>
                                 </div>
-                                <div class="media-body">
-                                    <h5 class="media-heading">{{ $item->title  }}</h5>
-                                    <div>
-                                        @foreach( json_decode($item->options)->selectedItemLocale as $key=>$value )
-                                            <span> {{ $loop->first ? '' : ','  }} {{ $key .':'.$value  }}</span>
-                                        @endforeach
+                                <div class="modal-body">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <th>日期</th>
+                                            <th>状态</th>
+                                            <th>信息</th>
+                                            <th>节点状态</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <?php
+                                        $origin_tracking_info = $tracking['data']['origin_info']['trackinfo'];
+                                        $destination_tracking_info = $tracking['data']['destination_info']['trackinfo'];
+                                        ?>
+                                        @if( !empty($origin_tracking_info)   )
+                                            <tr>
+                                                <td>{{$origin_tracking_info['date']}}</td>
+                                                <td>{{ $origin_tracking_info['StatusDescription'] }}</td>
+                                                <td>{{ $origin_tracking_info['Details'] }}</td>
+                                                <td>{{ $origin_tracking_info['checkpoint_status'] }}</td>
+                                            </tr>
+                                        @endif
+
+                                        @if( !empty( $destination_tracking_info )  )
+                                            <tr>
+                                                <td>{{ $destination_tracking_info['date']}}</td>
+                                                <td>{{ $destination_tracking_info['StatusDescription'] }}</td>
+                                                <td>{{ $destination_tracking_info['Details'] }}</td>
+                                                <td>{{ $destination_tracking_info['checkpoint_status'] }}</td>
+                                            </tr>
+                                        @endif
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{--alix end--}}
+                </section>
+            @endif
+
+            <section class="product_info_box mar-t20">
+                <hr>
+                <h4>Product Info</h4>
+                <table class="table">
+                    <thead class="bg-greyf9f8f7">
+                    <tr >
+                        <th width="300">Items</th>
+                        <th>Unit Price</th>
+                        <th>Qty(pcs)</th>
+                        <th>SubTotal</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    @foreach( $order->product as $item )
+                        <tr>
+                            <td> <div class="media">
+                                    <div class="media-left">
+                                        <a href="#">
+                                            <img class="media-object" src="{{$item->pic_path}}" alt="...">
+                                        </a>
+                                    </div>
+                                    <div class="media-body">
+                                        <h5 class="media-heading">{{ $item->title  }}</h5>
+                                        <div>
+                                            @foreach( json_decode($item->options)->selectedItemLocale as $key=>$value )
+                                                <span>
+                                                                        @if( $loop->first  == false )
+                                                        ,
+                                                    @endif
+                                                    {{ $key .':'.$value  }}
+                                                                    </span>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
-                            </div>  </td>
-                        <td> {{ $order->currency . ' ' . $item->unit_price_current_currency  }} </td>
-                        <td> {{ $item->quantity  }}</td>
-                        <td>{{ $order->currency . ' ' . $item->subtotal_current_currency  }}</td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
+                            </td>
+                            <td> {{ $order->currency . ' ' . $item->unit_price_current_currency  }} </td>
+                            <td> {{ $item->quantity  }}</td>
+                            <td>{{ $order->currency . ' ' . $item->subtotal_current_currency  }}</td>
+
+                            <td>
+                                {{--*********************如果有退款 退货相关则显示 如果没有则按订单状态显示***********************--}}
+                                <?php
+                                $refund = $item->refund()->get()->first();
+                                $return = $item->goods_return()->get()->first();
+                                ?>
+                                {{--如果有退款申请 并且无需退货 【退款申请,等待卖家审批】--}}
+                                {{--如果有退款申请 并且无需退货 已退款 【已退款】--}}
+                                {{--如果有退款申请 并且需退货 【退货申请,等待卖家审批】--}}
+                                {{--如果有退款申请 并且需退货 卖家已审批 【卖家同意退货】  --}}
+                                {{--如果有退款申请 已填写退货单【商品退货中】  --}}
+                                {{--如果有退款申请 已填写退货单【已退款】  --}}
+
+                                @if( !empty($refund) && $item->id == $refund->item_id
+                                    && $refund->need_return_goods == 0
+                                    && $refund->approve_status == 0 )
+                                    退款申请中,等待卖家审批
+                                @endif
+
+                                @if(!empty($refund) && $item->id == $refund->item_id
+                                    && $refund->refund_status == 1 )
+                                    已退款
+                                @endif
+
+                                @if(!empty($refund) && $item->id == $refund->item_id
+                                 && $refund->need_return_goods == 1
+                                 && $refund->approve_status == 0
+                                 && $refund->refund_status == 0
+                                 )
+                                    退货申请中,等待卖家审批
+                                @endif
+
+                                @if(!empty($refund) && $item->id == $refund->item_id
+                                 && $refund->need_return_goods == 1
+                                 && $refund->approve_status == 1
+                                 && $refund->refund_status == 0
+                                 && empty($return)
+                                 )
+                                    卖家同意退货
+                                @endif
+
+                                @if(!empty($refund) && !empty($return) && $item->id == $return->goods_id
+                                    && empty($return->shipping_time) == false
+                                    && $return->pickup_time ==false
+                                    && $refund->refund_status == 0
+                                )
+                                    商品退货中
+                                @endif
+
+                                @if(!empty($refund) && !empty($return) && $item->id == $return->goods_id
+                                    && empty($return->shipping_time) == false
+                                    && empty($return->pickup_time) == false
+                                    && $refund->refund_status == 0
+                                )
+                                    卖家已收到退货
+                                @endif
+
+                                {{--<span>{{  config('order')['status'][$order->order_status]  }}</span>--}}
+
+                            </td>
+
+                            <td data-orderid="{{$order->order_id}}"
+                                data-itemid="{{ $item->id }}"
+                                data-amount="{{$item->subtotal_current_currency}}"
+                                data-currency="{{$order->currency}}"
+                            >
+
+                                @if(!empty($refund) && !empty($return) && $item->id == $return->goods_id
+                                   && empty($return->shipping_time) == false
+                                   && $return->pickup_time ==false
+                                   && $refund->refund_status == 0
+                               )
+                                    <a href="javascript:;" class="view-return-tracking"
+                                       data-carrier="{{$return->delivery}}"
+                                       data-tracking_number="{{$return->tracking_no}}"
+                                    >查看退货物流</a>
+                                @endif
+
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </section>
 
             <hr>
             <h4>Supplier Info</h4>
@@ -148,6 +308,23 @@
             </table>
         </div>
 
+        <!-- 查看退货物流信息 Modal -->
+        <div class="modal fade" id="return_modal" tabindex="-1" role="dialog" aria-labelledby="#return_modal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Tracking Info</h4>
+                    </div>
+                    <div class="modal-body">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     @include('sale::admin.saleorders.partials.refund-comments')
 
 @stop
@@ -155,6 +332,7 @@
 @section('footer')
     <a data-toggle="modal" data-target="#keyboardShortcutsModal"><i class="fa fa-keyboard-o"></i></a> &nbsp;
 @stop
+
 @section('shortcuts')
     <dl class="dl-horizontal">
         <dt><code>c</code></dt>
@@ -181,10 +359,59 @@
 
             var orderid = $('[name="order_id"]').val();
             $('.refund_process').click(function(){
-                console.log(123)
                 $('#refund-comments').modal('show');
             });
 
+            $('.view-return-tracking').click(function(){
+                var carrier = $(this).data('carrier');
+                var tracking_number = $(this).data('tracking_number');
+                $.post(route('frontend.order.getSingleTrackingResult'),{
+                    _token:'{{csrf_token()}}',
+                    carrier_code: carrier,
+                    tracking_number:tracking_number
+                }).then(function(res){
+                    var data = res.result;
+                    if(data.meta.code == 200){
+                        var d = data.data;
+                        var str = '';
+                        var str_above='';
+
+                        var str_origin_info = '';
+                        var str_destination_info = '';
+
+                        str_above += 'Tracking Number: '+ d.tracking_number + ', '+d.carrier_code+'<br>'+
+                            'Start country: ' + d.original_country +'<br>Delivery country: '+d.destination_country+'<br>'+
+                            'Updated At: '+ d.updated_at;
+
+                        if( d.origin_info.trackinfo !== null ){
+                            for (var i = 0; i<d.origin_info.trackinfo.length ; i++){
+                                var tracking_info = d.origin_info.trackinfo[i];
+                                str_origin_info+= '<tr><td>'+tracking_info['date']+'</td>' +
+                                    '<td>\'+tracking_info[\'StatusDescription\']+\'</td>' +
+                                    '<td>\'+tracking_info[\'Details\']+\'</td>' +
+                                    '<td>\'+tracking_info[\'checkpoint_status\']+\'</td></tr>'
+                            }
+                        }
+
+                        if( d.destination_info.trackinfo !== null ){
+                            for (var i = 0; i<d.destination_info.trackinfo.length ; i++){
+                                var tracking_info = d.origin_info.trackinfo[i];
+                                str_destination_info+= '<tr><td>'+tracking_info['date']+'</td>' +
+                                    '<td>\'+tracking_info[\'StatusDescription\']+\'</td>' +
+                                    '<td>\'+tracking_info[\'Details\']+\'</td>' +
+                                    '<td>\'+tracking_info[\'checkpoint_status\']+\'</td></tr>'
+                            }
+                        }
+
+                        str+= '<div>'+str_above+'</div><table class="table table-bordered"><thead><th>date</th><th>StatusDescription</th><th>Details</th><th>checkpoint_status</th></thead>' +
+                            '<tbody>'+str_origin_info+str_destination_info+'</tbody></table>';
+
+                        $('#return_modal .modal-body').html(str);
+                        $('#return_modal').modal('show');
+
+                    }
+                })
+            });
         });
     </script>
 @endpush
