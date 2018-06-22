@@ -15,9 +15,9 @@
         <div class="col-xs-12">
             <div class="row">
                 <div class="btn-group pull-right" style="margin: 0 15px 15px 0;">
-                    <a href="{{ route('admin.sale.orderreturn.create') }}" class="btn btn-primary btn-flat" style="padding: 4px 10px;">
-                        <i class="fa fa-pencil"></i> {{ trans('sale::orderreturns.button.create orderreturn') }}
-                    </a>
+                    {{--<a href="{{ route('admin.sale.orderreturn.create') }}" class="btn btn-primary btn-flat" style="padding: 4px 10px;">--}}
+                        {{--<i class="fa fa-pencil"></i> {{ trans('sale::orderreturns.button.create orderreturn') }}--}}
+                    {{--</a>--}}
                 </div>
             </div>
             <div class="box box-primary">
@@ -29,35 +29,48 @@
                         <table class="data-table table table-bordered table-hover">
                             <thead>
                             <tr>
+                                <th>序号</th>
+                                <th>order_id</th>
+                                <th>goods_id</th>
+                                <th>user_id</th>
+                                <th>delivery</th>
+                                <th>tracking_no</th>
+                                <th>return_status</th>
                                 <th>{{ trans('core::core.table.created at') }}</th>
+                                <th>{{ trans('core::core.table.updated at') }}</th>
+                                <th>shipping_time</th>
+                                <th>pickup_time</th>
+
                                 <th data-sortable="false">{{ trans('core::core.table.actions') }}</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php if (isset($orderreturns)): ?>
-                            <?php foreach ($orderreturns as $orderreturn): ?>
+                            <?php foreach ($orderreturns as $key=>$orderreturn): ?>
                             <tr>
+                                <td>{{$key+1}}</td>
+                                <td>{{ $orderreturn->order_id }}</td>
+                                <td>{{ $orderreturn->goods_id }}</td>
+                                <td>{{ $orderreturn->user_id }}</td>
+                                <td>{{ $orderreturn->delivery }}</td>
+                                <td>{{ $orderreturn->tracking_no }}</td>
+                                <td>{{ $orderreturn->return_status }}</td>
+                                <td>{{ $orderreturn->created_at }}</td>
+                                <td>{{ $orderreturn->updated_at }}</td>
+                                <td>{{ $orderreturn->shipping_time }}</td>
+                                <td>{{ $orderreturn->pickup_time }}</td>
+
                                 <td>
-                                    <a href="{{ route('admin.sale.orderreturn.edit', [$orderreturn->id]) }}">
-                                        {{ $orderreturn->created_at }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="{{ route('admin.sale.orderreturn.edit', [$orderreturn->id]) }}" class="btn btn-default btn-flat"><i class="fa fa-pencil"></i></a>
-                                        <button class="btn btn-danger btn-flat" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.sale.orderreturn.destroy', [$orderreturn->id]) }}"><i class="fa fa-trash"></i></button>
-                                    </div>
+                                    {{--<div class="btn-group">--}}
+                                        {{--<a href="{{ route('admin.sale.orderreturn.edit', [$orderreturn->id]) }}" class="btn btn-default btn-flat"><i class="fa fa-pencil"></i></a>--}}
+                                        {{--<button class="btn btn-danger btn-flat" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.sale.orderreturn.destroy', [$orderreturn->id]) }}"><i class="fa fa-trash"></i></button>--}}
+                                    {{--</div>--}}
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                             <?php endif; ?>
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <th>{{ trans('core::core.table.created at') }}</th>
-                                <th>{{ trans('core::core.table.actions') }}</th>
-                            </tr>
-                            </tfoot>
+
                         </table>
                         <!-- /.box-body -->
                     </div>
@@ -99,7 +112,7 @@
                 "sort": true,
                 "info": true,
                 "autoWidth": true,
-                "order": [[ 0, "desc" ]],
+                "order": [[ 8, "asc" ]],
                 "language": {
                     "url": '<?php echo Module::asset("core:js/vendor/datatables/{$locale}.json") ?>'
                 }

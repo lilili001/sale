@@ -31,9 +31,8 @@ class OrderReturnController extends AdminBaseController
      */
     public function index()
     {
-        //$orderreturns = $this->orderreturn->all();
-
-        return view('sale::admin.orderreturns.index', compact(''));
+        $orderreturns = $this->orderreturn->all();
+        return view('sale::admin.orderreturns.index', compact('orderreturns'));
     }
 
     /**

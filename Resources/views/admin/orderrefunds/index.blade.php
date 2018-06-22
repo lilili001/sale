@@ -62,9 +62,10 @@
                                         $orderProduct = $orderrefund->item()->get()->first();
                                         $returnGood = $orderProduct->goods_return()->first();
                                     ?>
-                                        @if( $orderrefund->need_return_goods && isset($returnGood->shipping_time) )
+                                    {{--如果需要退货 则退货收到后显示退款按钮--}}
+                                        @if( $orderrefund->need_return_goods &&  isset($returnGood->pickup_time)  && $orderrefund->refund_status == 0  )
                                             <span class="approve-refund" data-refund_id="{{ $orderrefund->refund_no }}">{{ $orderrefund->refund_status || $orderrefund->updated_at ? '' : '退款' }}</span>
-                                        @else
+                                        @elseif( $orderrefund->need_return_goods == 0 && $orderrefund->refund_status == 0 )
                                             <span class="approve-refund" data-refund_id="{{ $orderrefund->refund_no }}">{{ $orderrefund->refund_status || $orderrefund->updated_at ? '' : '退款' }}</span>
                                         @endif
                                      @endif
