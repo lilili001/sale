@@ -4,6 +4,8 @@ namespace Modules\Sale\Repositories\Eloquent;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Modules\Sale\Entities\ProductReviewReply;
+use Modules\Sale\Notifications\CommentReplyNotification;
 use Modules\Sale\Repositories\OrderReviewRepository;
 use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
 
@@ -44,8 +46,20 @@ class EloquentOrderReviewRepository extends EloquentBaseRepository implements Or
         try{
             DB::transaction(function()use ($data){
                 //允许展示
-                info($data);
                 $this->approve_review( $data['review_id'] );
+
+                $replies = ProductReviewReply::pluck('dialog_id');
+                $fromUserId = user()->id;
+                $toUserId = $data['to_user_id'];
+
+                if( count($replies) == 0 ){
+                    $dialog_id = $fromUserId.'-'.$toUserId;
+                }else{
+                    $dialog_id = findDialogId($replies,$fromUserId,$toUserId);
+                    if( !$dialog_id ){
+                        $dialog_id = $fromUserId.'-'.$toUserId;
+                    }
+                }
 
                 //添加回复
                 if( isset($data['review_reply']) ){
@@ -57,7 +71,8 @@ class EloquentOrderReviewRepository extends EloquentBaseRepository implements Or
                         'is_show' => 1,
                         'to_user_id' => $data['to_user_id'],
                         'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
+                        'dialog_id' => $dialog_id
                     ]);
                     //回复添加完 更新product_comments表的回复数量
                     $review = DB::table('product_comments')->where('id',$data['review_id'])->get()->first() ;
@@ -66,6 +81,12 @@ class EloquentOrderReviewRepository extends EloquentBaseRepository implements Or
                         'reply_count' => $org_count + 1
                     ]);
 
+                    //$reply =  DB::table('product_comments_reply')->orderBy('created_at','desc')->get()->first();
+                    $reply =  ProductReviewReply::orderBy('created_at','desc')->get()->first();
+                    //通知用户
+                    if( $data['to_user_id'] != user()->id ){
+                        getUser( $data['to_user_id'] )->notify(new CommentReplyNotification( $reply ));
+                    }
                 }
             });
         }catch (Exception $e){
