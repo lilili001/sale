@@ -4,8 +4,8 @@ namespace Modules\Sale\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Modules\Mpay\Entities\Order;
-use Modules\Mpay\Repositories\OrderRepository;
+use Modules\Sale\Entities\Order;
+use Modules\Sale\Repositories\OrderRepository;
 use Modules\Sale\Entities\OrderRefund;
 use Modules\Sale\Entities\SaleOrder;
 use Modules\Sale\Http\Requests\CreateSaleOrderRequest;

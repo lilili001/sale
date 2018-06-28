@@ -3,7 +3,7 @@
 namespace Modules\Sale\Repositories;
 
 use Modules\Core\Repositories\BaseRepository;
-use Modules\Mpay\Entities\Order;
+use Modules\Sale\Entities\Order;
 
 interface SaleOrderRepository extends BaseRepository
 {

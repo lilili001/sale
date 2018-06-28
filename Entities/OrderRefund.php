@@ -3,7 +3,7 @@
 namespace Modules\Sale\Entities;
 
 use Illuminate\Database\Eloquent\Model;
-use Modules\Mpay\Entities\OrderProduct;
+use Modules\Sale\Entities\OrderProduct;
 
 class OrderRefund extends Model
 {

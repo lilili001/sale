@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Core\Traits\CanPublishConfiguration;
 use Modules\Core\Events\BuildingSidebar;
 use Modules\Core\Events\LoadingBackendTranslations;
-use Modules\Mpay\Entities\Order;
+use Modules\Sale\Entities\Order;
 use Modules\Sale\Events\Handlers\RegisterSaleSidebar;
 
 class SaleServiceProvider extends ServiceProvider

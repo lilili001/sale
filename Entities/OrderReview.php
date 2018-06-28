@@ -4,7 +4,7 @@ namespace Modules\Sale\Entities;
 
 use Dimsav\Translatable\Translatable;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Mpay\Entities\OrderProduct;
+use Modules\Sale\Entities\OrderProduct;
 use Overtrue\LaravelFollow\Traits\CanBeVoted;
 
 class OrderReview extends Model

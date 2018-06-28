@@ -13,7 +13,7 @@ use App\Http\Controllers\Controller;
 use AjaxResponse;
 use App\Services\ImageH;
 use Illuminate\Http\Request;
-use Modules\Mpay\Entities\Order;
+use Modules\Sale\Entities\Order;
 use Modules\Sale\Entities\OrderReview;
 use Modules\Sale\Entities\ProductReviewReply;
 use Modules\Sale\Repositories\OrderReviewRepository;

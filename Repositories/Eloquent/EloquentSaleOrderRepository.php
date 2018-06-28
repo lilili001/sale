@@ -4,10 +4,10 @@ namespace Modules\Sale\Repositories\Eloquent;
 
 use App\Services\ImageH;
 use Illuminate\Support\Facades\DB;
-use Modules\Mpay\Entities\Order;
-use Modules\Mpay\Entities\OrderDelivery;
-use Modules\Mpay\Entities\OrderOperation;
-use Modules\Mpay\Repositories\OrderRepository;
+use Modules\Sale\Entities\Order;
+use Modules\Sale\Entities\OrderDelivery;
+use Modules\Sale\Entities\OrderOperation;
+use Modules\Sale\Repositories\OrderRepository;
 use Modules\Sale\Entities\Comment;
 use Modules\Sale\Entities\OrderRefund;
 use Modules\Sale\Entities\OrderReturn;
