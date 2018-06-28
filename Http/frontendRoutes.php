@@ -145,7 +145,7 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
 
 //alipay routes
 $router->group(['prefix' =>'/alipay'], function (Router $router) {
-
+ 
     $router->get('/checkout/{order}',[
         'uses' => 'AlipayController@checkout',
         'as' => 'alipay.checkout'

@@ -53,10 +53,10 @@ class AlipayController extends BasePublicController
          * @var AopTradePagePayResponse $response
          */
         $order = Order::where('order_id',decrypt($orderId))->get()->first();
-
         $response = $this->gateway->purchase()->setBizContent([
             'subject'      => 'test',
             'out_trade_no' => decrypt($orderId),
+
             'total_amount' => '0.01',
             'product_code' => 'FAST_INSTANT_TRADE_PAY',
         ])->send();
