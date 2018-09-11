@@ -96,7 +96,7 @@
             @endif
 
             {{--************物流信息****************--}}
-            @if( $tracking['meta']['code'] == 200 )
+            @if( isset($tracking) && $tracking['meta']['code'] == 200 )
                 <hr>
                 <section>
                     <h4>物流信息</h4>

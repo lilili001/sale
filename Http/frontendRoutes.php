@@ -127,20 +127,17 @@ $router->group(['prefix' =>'/order'], function (Router $router) {
         'middleware' => 'logged.in'
     ]);
 
-
-
     //Order routes
-
-        $router->post('save', [
-            'uses' => 'OrderController@save',
-            'as' => 'order.create'
-        ]);
-        $router->post('update', [
-            'uses' => 'OrderController@update'
-        ]);
-        $router->get('delete',[
-            'uses' => 'OrderController@update'
-        ]);
+    $router->post('save', [
+        'uses' => 'OrderController@save',
+        'as' => 'order.create'
+    ]);
+    $router->post('update', [
+        'uses' => 'OrderController@update'
+    ]);
+    $router->get('delete',[
+        'uses' => 'OrderController@update'
+    ]);
 });
 
 //alipay routes
@@ -197,3 +194,13 @@ Route::get('/paypal/refund/{transactionId}',[
     'as' => 'paypal.refund',
     'uses' => 'PaypalController@refund'
 ]);
+
+Route::get('/paypal-checkout/error',[
+    'name' => 'paypal.checkout.error',
+    'as' => 'paypal.checkout.error',
+    'uses' => 'PaypalController@checkoutError'
+]);
+/*
+Route::get('/paypal-checkout/error',function(){
+    return 'checkout error';
+});*/

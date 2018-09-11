@@ -51,7 +51,7 @@
                                 <td>
                                     <div class="btn-group" data-orderid="{{ $order->order_id  }}">
 
-                                        {{-- 订单已付款3 卖家订货 订货完成 状态变为6 --}}
+                                        {{-- 订单已付款3 卖家订货 订货完成 这个只是卖家自己标记使用 如果已订货 则买家不可以申请退款 直到收到货后 状态变为6 --}}
                                         @if( $order->is_paid && $order->order_status == 3)
                                         <a class="order_with_supplier" href="javascript:;">订货</a>
                                         @endif

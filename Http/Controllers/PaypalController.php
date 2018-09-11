@@ -69,21 +69,31 @@ class PayPalController extends BasePublicController
     {
         $order = Order::where([ 'order_id' => decrypt($order_id)] )->get()->first() ;
         $paypal = new PayPal;
-        $response = $paypal->purchase([
-            'amount' => $paypal->formatAmount($order->amount_current_currency),
-            'transactionId' => $order->order_id,
-            'currency' => $order->currency,
-            'cancelUrl' => $paypal->getCancelUrl($order),
-            'returnUrl' => $paypal->getReturnUrl($order),
-        ]);
+        try{
+            $response = $paypal->purchase([
+                'amount' => $paypal->formatAmount($order->amount_current_currency),
+                'transactionId' => $order->order_id,
+                'currency' => $order->currency,
+                'cancelUrl' => $paypal->getCancelUrl($order),
+                'returnUrl' => $paypal->getReturnUrl($order),
+            ]);
 
-        if ($response->isRedirect()) {
-            $response->redirect();
+            if ( $response->isRedirect()) {
+                $response->redirect();
+            }
+        }catch (Exception $e){
+            echo $e->getMessage() . $e->getCode() ;
         }
 
-        return redirect()->back()->with([
+        /*dump($response->isSuccessful());
+        dump($response->getMessage());
+        dump($response->redirect());*/
+
+        /*如果没有 isRedirect 返回到首页*/
+        return redirect('/');
+       /* return redirect()->back()->with([
             'message' => $response->getMessage(),
-        ]);
+        ]);*/
     }
 
     /**
@@ -108,15 +118,14 @@ class PayPalController extends BasePublicController
         if ($response->isSuccessful()) {
             Order::where('order_id',$order_id)->update([
                 'transaction_id' => $response->getTransactionReference(),
-                'order_status' => 3 //已付款
+                'order_status' => 3, //已付款
+                'is_paid' => 1
             ]);
 
             return redirect()->route('app.home', encrypt($order_id))->with([
                 'message' => 'You recent payment is sucessful with reference code ' . $response->getTransactionReference(),
             ]);
         }
-
-        dd($response) ;
     }
     /**
      * @param $order_id
@@ -211,5 +220,8 @@ class PayPalController extends BasePublicController
         return $total;
     }
 
-
+    public function checkoutError()
+    {
+        return view('errors.checkout_error');
+    }
 }

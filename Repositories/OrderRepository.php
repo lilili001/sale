@@ -94,7 +94,7 @@ class OrderRepository
                     'order_id' => $order_id,
                     'name'     => $address['first_name'] . ' ' .$address['last_name'],
                     'telephone'=> $address['telephone'],
-                    'country'  => $address['country_label'],
+                    'country'  => isset($address['country_label']) ? $address['country_label'] : '',
                     'state'    => $address['state_label'],
                     'city'     => $address['city_label'],
                     'street'   => $address['street'] ,
