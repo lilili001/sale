@@ -110,8 +110,8 @@
 
                 {{--alix start--}}
                 <!-- Modal -->
-                    <div class="modal fade" id="shippingDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                        <div class="modal-dialog" role="document">
+                    <div class="modal fade" id="shippingDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" >
+                        <div class="modal-dialog" role="document" style="width:800px">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -131,23 +131,40 @@
                                         <?php
                                         $origin_tracking_info = $tracking['data']['origin_info']['trackinfo'];
                                         $destination_tracking_info = $tracking['data']['destination_info']['trackinfo'];
+
+                                        $packet_status = [
+                                            'pending' => '查询中',
+                                            'notfound' => '查询不到',
+                                            'transit' => '运输途中',
+                                            'pickup' => '到达待取',
+                                            'delivered' => '成功签收',
+                                            'undelivered' => '投递失败',
+                                            'exception' => 'exception',
+                                            'expired' => '运输过久'
+                                        ];
+
                                         ?>
+
                                         @if( !empty($origin_tracking_info)   )
+                                            @foreach( $origin_tracking_info as $origin_track )
                                             <tr>
-                                                <td>{{$origin_tracking_info['date']}}</td>
-                                                <td>{{ $origin_tracking_info['StatusDescription'] }}</td>
-                                                <td>{{ $origin_tracking_info['Details'] }}</td>
-                                                <td>{{ $origin_tracking_info['checkpoint_status'] }}</td>
+                                                <td>{{$origin_track['Date']}}</td>
+                                                <td>{{ $origin_track['StatusDescription'] }}</td>
+                                                <td>{{ $origin_track['Details'] }}</td>
+                                                <td>{{ $packet_status[$origin_track['checkpoint_status']] }}</td>
                                             </tr>
+                                            @endforeach
                                         @endif
 
                                         @if( !empty( $destination_tracking_info )  )
+                                            @foreach( $destination_tracking_info as $dest_track )
                                             <tr>
-                                                <td>{{ $destination_tracking_info['date']}}</td>
-                                                <td>{{ $destination_tracking_info['StatusDescription'] }}</td>
-                                                <td>{{ $destination_tracking_info['Details'] }}</td>
-                                                <td>{{ $destination_tracking_info['checkpoint_status'] }}</td>
+                                                <td>{{ $dest_track['Date']}}</td>
+                                                <td>{{ $dest_track['StatusDescription'] }}</td>
+                                                <td>{{ $dest_track['Details'] }}</td>
+                                                <td>{{ $dest_track['checkpoint_status'] }}</td>
                                             </tr>
+                                            @endforeach
                                         @endif
                                         </tbody>
                                     </table>

@@ -61,6 +61,11 @@
                                         <a  class="ship"><span>发货</span></a>
                                         @endif
 
+                                        {{-- 如果已发货 卖家后台可以修改发货配置 --}}
+                                        @if( $order->order_status == 7 )
+                                            <a  class="ship"><span>修改发货</span></a>
+                                        @endif
+
                                         {{--case3:
                                         如果已付款 并且没和供应商订货 则买家可以提退款申请15
                                         或者是买家退货退款申请 退货收到 状态变为13的时候
@@ -119,6 +124,9 @@
     <?php $locale = locale(); ?>
     <script type="text/javascript">
         $(function () {
+
+            $('[name="shipping_method"]').selectize();
+
             $('.data-table').dataTable({
                 "paginate": true,
                 "lengthChange": true,

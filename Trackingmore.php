@@ -69,6 +69,8 @@ class Trackingmore{
         if ($result) {
             $returnData = json_decode($result, true);
         }
+        info('Tranckingmore getCarrierList');
+        info($returnData);
         return $returnData;
     }
 	
@@ -217,6 +219,10 @@ class Trackingmore{
         if ($result) {
             $returnData = json_decode($result, true);
         }
+        info( 'TrackingMore 查询单个订单接口:' );
+        info( 'carrierCode:' . $carrierCode );
+        info( 'trackingNumber:' . $trackingNumber );
+        info($returnData);
         return $returnData;
     }
 	

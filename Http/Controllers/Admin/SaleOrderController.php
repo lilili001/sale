@@ -56,11 +56,14 @@ class SaleOrderController extends AdminBaseController
 
         $order_refund = OrderRefund::where('order_id' ,$orderId )->get()->first();
 
-        $refund_comments = $order_refund->comments->toArray();
+        if( isset($order_refund) ){
+            $refund_comments = $order_refund->comments->toArray();
+        }
 
         $shipping = $order->delivery()->get()->first();
-
-        $tracking =  $this->tracking->getSingleTrackingResult( $shipping->delivery , $shipping->tracking_number , 'en' )  ;
+        if( isset($shipping) ){
+            $tracking =  $this->tracking->getSingleTrackingResult( $shipping->delivery , $shipping->tracking_number , 'en' );
+        }
 
         return view('sale::admin.saleorders.detail',compact('order' , 'refund_comments', 'tracking'));
     }
