@@ -9,7 +9,8 @@
         "idavoll/core-module": "~3.0",
         "ignited/laravel-omnipay": "^2.3",
         "lokielse/omnipay-alipay": "^2.3",
-        "omnipay/paypal": "^2.6"
+        "omnipay/paypal": "^2.6",
+        "zgabievi/promocodes": "^2.1"
     },
     "require-dev": {
         "phpunit/phpunit": "~6.0",
