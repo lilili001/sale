@@ -54,11 +54,8 @@ class PublicController extends AdminBaseController
      */
     public function index()
     {
-<<<<<<< HEAD
         $orders = $this->saleorder->all_frontend();
-=======
-        $orders = $this->saleorder->all();
->>>>>>> 7dbf57ae1ecb6db065d795619c74a38cb55d4132
+
         $pageClass = 'order';
         return view('usercenter.order', compact('orders','pageClass'));
     }

@@ -21,7 +21,13 @@ class Trackingmore{
 	const ROUTE_TRACKINGS_COSTTIME   = 'trackings/costtime';
 	const ROUTE_TRACKINGS_UPDATEMORE   = 'trackings/updatemore';
     //protected $apiKey              =  '94b0c08c-081e-48c5-876c-fedd9bc88d63';
-    protected $apiKey              =  '7d47c141-8eee-40dc-8743-ad7a3b3a35a5';
+    //protected $apiKey              =  '7d47c141-8eee-40dc-8743-ad7a3b3a35a5';
+    protected $apiKey = '';
+
+    public function __construct()
+    {
+        $this->apiKey = config('order.tracking_apikey');
+    }
 
     protected function _getApiData($route, $method = 'GET', $sendData = array()){
 		$method     = strtoupper($method);
