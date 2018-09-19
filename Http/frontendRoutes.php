@@ -203,6 +203,7 @@ Route::get('/paypal-checkout/error',[
 /*
 Route::get('/paypal-checkout/error',function(){
     return 'checkout error';
+
 });*/
 
 /*获取用户优惠券列表*/
@@ -236,3 +237,4 @@ Route::post('/disableCuponCode/{code}',[
     'uses' => 'PromocodeController@disableCuponCode',
     'middleware' => 'logged.in'
 ]);
+

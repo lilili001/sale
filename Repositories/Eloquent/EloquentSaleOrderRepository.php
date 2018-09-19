@@ -39,6 +39,7 @@ class EloquentSaleOrderRepository extends EloquentBaseRepository implements Sale
     {
         return Order::where('user_id',user()->id)->orderBy('created_at', 'desc')->paginate(10);
     }
+
     /**
      * @param $order
      * @return bool
